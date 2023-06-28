@@ -28,8 +28,8 @@ step = 0.01
 h = 0.88                       
 rr = 1                              
 conversion_factor = 3.3*10**9
-M = 250*st.session_state.N*conversion_factor*st.session_state.area
-detection_threshold = M = 0.1*st.session_state.N*conversion_factor*st.session_state.area
+st.session_state.M = 250*st.session_state.N*conversion_factor*st.session_state.area
+detection_threshold = 0.1*st.session_state.N*conversion_factor*st.session_state.area
 s = 1
 v = [1] * st.session_state.num_generations
 
@@ -78,7 +78,7 @@ def generate_main_plot(tot):
     ax.set_xlabel("Generations")
     ax.set_ylabel("PCNs in field (log scale)")
     ax.set_xlim([1, st.session_state.num_generations])
-    ax.set_ylim([detection_threshold, M])
+    ax.set_ylim([detection_threshold, st.session_state.M])
     ax.set_yscale('log')
     ax.tick_params(axis='both', which='major', labelsize=10)
     # Display the plot in Streamlit
@@ -112,6 +112,7 @@ def generate_virulence_plot(f_A, f_a, Y, Z):
     ax[1, 0].set_ylabel("Aa PCN")
     ax[1, 0].set_yscale('log')
     ax[1, 0].set_xlim([1, st.session_state.num_generations])
+    ax[1, 0].set_ylim([detection_threshold, st.session_state.M])
     ax[1, 0].tick_params(axis='both', which='major', labelsize=10)
     ax[1, 0].legend(['Aa PCN'], loc=1, prop={'size': 10})
 
@@ -121,6 +122,7 @@ def generate_virulence_plot(f_A, f_a, Y, Z):
     ax[1, 1].set_ylabel("aa PCN")
     ax[1, 1].set_yscale('log')
     ax[1, 1].set_xlim([1, st.session_state.num_generations])
+    ax[1, 1].set_ylim([detection_threshold, st.session_state.M])
     ax[1, 1].tick_params(axis='both', which='major', labelsize=10)
     ax[1, 1].legend(['aa PCN'], loc=1, prop={'size': 10})
     
@@ -171,7 +173,7 @@ def generate_genetic_drift_plot():
                 offspring = (
                 g * (F_A[n] * (X[n] + Y[n]) + F_a[n] * Z[n])
                 * np.random.multinomial(st.session_state.N, p)
-                / (1 + (X[n] + Y[n] + Z[n]) / M)
+                / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
                 )
                 X[n + 1] = offspring[0]
                 Y[n + 1] = offspring[1]
@@ -215,7 +217,7 @@ if main_tab == "Main":
     h = 0.88                           #Egg hatching success rate
     rr = 1                             #Avirulent pest sex ratio when resistance
     conversion_factor = 3.3*10**9
-    M = 145*st.session_state.N*conversion_factor*st.session_state.area   #Limiting factor
+    st.session_state.M = 145*st.session_state.N*conversion_factor*st.session_state.area   #Limiting factor
     v = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
     s = 1
     g = h*st.session_state.N*st.session_state.s_E*s*(1-st.session_state.bc)
@@ -247,9 +249,9 @@ if main_tab == "Main":
             Y[n+1] = 0
             Z[n+1] = 0
         else:
-            X[n+1] = (g * (M_A[n] * F_A[n] * (X[n] + Y[n]/2)**2) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n])) / (1 + (X[n] + Y[n] + Z[n]) / M)
-            Y[n+1] = (g * (M_A[n] * (F_a[n] * Z[n] + F_A[n] * Y[n]/2) * (X[n] + Y[n]/2) + F_A[n] * (M_a[n] * Z[n] + M_A[n] * Y[n]/2) * (X[n] + Y[n]/2))) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n]) / (1 + (X[n] + Y[n] + Z[n]) / M)
-            Z[n+1] = (g * (F_a[n] * Z[n] + F_A[n] * Y[n]/2) * (M_a[n] * Z[n] + M_A[n] * Y[n]/2)) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n]) / (1 + (X[n] + Y[n] + Z[n]) / M)
+            X[n+1] = (g * (M_A[n] * F_A[n] * (X[n] + Y[n]/2)**2) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n])) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
+            Y[n+1] = (g * (M_A[n] * (F_a[n] * Z[n] + F_A[n] * Y[n]/2) * (X[n] + Y[n]/2) + F_A[n] * (M_a[n] * Z[n] + M_A[n] * Y[n]/2) * (X[n] + Y[n]/2))) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n]) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
+            Z[n+1] = (g * (F_a[n] * Z[n] + F_A[n] * Y[n]/2) * (M_a[n] * Z[n] + M_A[n] * Y[n]/2)) / (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n]) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
     
     tot = X + Y + Z
     f_AA = np.zeros(st.session_state.num_generations)
