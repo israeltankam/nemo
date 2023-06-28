@@ -23,12 +23,13 @@ st.session_state.setdefault("sav", 0.25)
 st.session_state.setdefault("sv", 0.25)
 st.session_state.setdefault("rs", 0.35)
 st.session_state.setdefault("s_E", 0.036)
-st.session_state.setdefault("N", 350)
+st.session_state.setdefault("N", 300)
 step = 0.01
 h = 0.88                       
 rr = 1                              
 conversion_factor = 3.3*10**9
-M = 145*st.session_state.N*conversion_factor*st.session_state.area
+M = 250*st.session_state.N*conversion_factor*st.session_state.area
+detection_threshold = M = 0.1*st.session_state.N*conversion_factor*st.session_state.area
 s = 1
 v = [1] * st.session_state.num_generations
 
@@ -77,6 +78,7 @@ def generate_main_plot(tot):
     ax.set_xlabel("Generations")
     ax.set_ylabel("PCNs in field (log scale)")
     ax.set_xlim([1, st.session_state.num_generations])
+    ax.set_ylim([detection_threshold, M])
     ax.set_yscale('log')
     ax.tick_params(axis='both', which='major', labelsize=10)
     # Display the plot in Streamlit
@@ -198,7 +200,7 @@ if main_tab == "Main":
     st.session_state.deployment_type = st.session_state.deployment_type.upper()  # Convert input to uppercase
     if not all(ch in ['R', 'S'] for ch in st.session_state.deployment_type):
         st.error("Invalid deployment type. Please enter a string containing only 'R' or 'S'.")
-    update_button = st.button("Update")
+    #update_button = st.button("Update")
     st.session_state.rep_deployment = st.checkbox("Indefinitely repeat this deployment", value=True)
     if st.session_state.rep_deployment:
         st.session_state.num_generations = st.slider("Number of generations (if checked above):", min_value=1, max_value=100, value=st.session_state.num_generations, step=1)
@@ -277,14 +279,14 @@ if main_tab == "Main":
     st.session_state.ff_A = f_A
     st.session_state.ff_a = f_a
     generate_main_plot(tot)
-    if update_button:
+    #if update_button:
         # Generate plots based on updated parameters
-        if len(st.session_state.deployment_type) > 1:
-            st.session_state.rep_deployment = False
-            st.session_state.num_generations = len(st.session_state.deployment_type)
-        print(st.session_state.num_generations)
-        print(v)
-        generate_main_plot(tot)
+    #    if len(st.session_state.deployment_type) > 1:
+    #        st.session_state.rep_deployment = False
+    #        st.session_state.num_generations = len(st.session_state.deployment_type)
+    #    print(st.session_state.num_generations)
+    #   print(v)
+    #    generate_main_plot(tot)
     st.markdown(f"Basic reproduction number R0 = {R0}")
     st.markdown(f"Suppression threshold = {disp}")
 elif main_tab == "Progression of virulence":
