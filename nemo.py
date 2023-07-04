@@ -126,11 +126,11 @@ if main_tab == "Introduction":
     st.markdown("- The use of resistant potato cultivars is a popular sustainable pest control measure, but the evolution of PCN populations towards virulence can reduce the long-term effectiveness of resistance-based control.")
     st.markdown("- Masculinizing resistance prevents avirulent nematodes from producing females, which could ultimately eliminate avirulent PCNs from the population.")
     st.markdown("- However, [Shouten's model](https://link.springer.com/article/10.1007/BF03041409) tracing genotypic frequencies in real conditions shows that the long-term fixation of the virulence allele does not necessarily occur despite the selection pressure.")
-    st.markdown("- Avirulent nematodes, which are exclusively male, survive as heterozygotes by mating with virulent females, weakening the PCN's reproductive rate.")
+    st.markdown("- Avirulent nematodes, which are exclusively male, survive as heterozygotes by mating with virulent females, weakening the PCN's reproduction number.")
     st.markdown("- Biocontrol efficiency required for PCN long-term suppression under resistant plants is lower than under susceptible plants.")
     st.markdown("- Combining resistant cultivars with biocontrol methods appears to be an effective solution for suppressing PCN populations.")
     st.markdown("- The model presented for this simulation tracks at the same time the PCN genetics and dynamics to describe selection for virulence and biocontrol needs under resistance.")
-    st.markdown("- The user is able to enter the type of plant deployed in each generation (season) - S for Susceptible, R for Resistant - and the app will establish PCN's base reproductive rate, its threshold for nematode suppression , and the evolution of the PCN population as well as the corresponding allele frequencies.")
+    st.markdown("- The user is able to enter the type of plant deployed in each generation (season) - S for Susceptible, R for Resistant - and the app will establish PCN's basic reproduction number $\mathcal{R}_0$, its threshold for nematode suppression , and the evolution of the PCN population as well as the corresponding allele frequencies.")
 
 elif main_tab == "Model & Parameters":
     st.markdown("# Model & parameters")
