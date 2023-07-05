@@ -72,11 +72,12 @@ def generate_deployment_vector(input_string, n_gen):   #n_gen will be the global
       
 def generate_main_plot(tot,f_A, f_a, Y, Z):
     fig, ax = plt.subplots(figsize=(18, 14), dpi=100)
-    ax.plot(np.arange(1, st.session_state.num_generations+1), np.divide(tot,st.session_state.N), '-r', linewidth=3)
+    #ax.plot(np.arange(1, st.session_state.num_generations+1), np.divide(tot,st.session_state.N), '-r', linewidth=3)
+    ax.plot(np.arange(1, st.session_state.num_generations+1), tot, '-r', linewidth=3)
     ax.set_xlabel("Generations", fontsize=40)
-    ax.set_ylabel("Cysts/g of soil (log)", fontsize=40)
+    ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
     ax.set_xlim([1, st.session_state.num_generations])
-    ax.set_ylim([st.session_state.detection_threshold, st.session_state.M/st.session_state.N])
+    ax.set_ylim([st.session_state.detection_threshold*st.session_state.N, st.session_state.M])
     ax.set_yscale('log')
     ax.tick_params(axis='both', which='major', labelsize=30)
     
