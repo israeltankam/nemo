@@ -256,7 +256,8 @@ elif main_tab == "Simulation":
         st.session_state.deployment_type = st.session_state.deployment_type.upper()  # Convert input to uppercase
         if not all(ch in ['R', 'S'] for ch in st.session_state.deployment_type):
             st.error("Invalid deployment type. Please enter a string containing only 'R' or 'S'.")
-        st.session_state.rep_deployment = st.checkbox("Indefinitely repeat this deployment", value=True)
+        #rep_deployment = deployment_type not in ["S", "R"]
+        st.session_state.rep_deployment = st.checkbox("Indefinitely repeat this deployment", value=st.session_state.deployment_type in ["S", "R"])     
     with colu2:
         st.session_state.init_infest = st.slider("Initial infestation (cysts/g of soil):", min_value=0.1, max_value=240.0, value=st.session_state.init_infest, step=0.1)
         if st.session_state.rep_deployment:
@@ -279,7 +280,7 @@ elif main_tab == "Simulation":
         thres = float('-inf')
     # Display R0
     R0 = dec2(R0)
-    disp = thres if thres != float('-inf') else 'Unknown'
+    disp = thres if thres != float('-inf') else '> 1'
     col1, col2, col3 = st.columns(3)  
     with col1:
         st.markdown(f"$R_0$ = {R0}")
