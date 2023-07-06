@@ -1,54 +1,28 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
+import hydralit_components as hc
 
-# Create the figure and axes
-fig, ax = plt.subplots()
+#make it look nice from the start
+st.set_page_config(layout='wide',initial_sidebar_state='collapsed')
 
-# Generate some random data for plotting
-x = np.linspace(0, 10, 100)
-y = np.sin(x)
+# specify the primary menu definition
+menu_data = [
+    {'icon': "far fa-copy", 'label':"Model & Parameters"},
+    {'icon': "far fa-chart-bar", 'label':"Simulations"},#no tooltip message
+    {'icon': "fas fa-tachometer-alt", 'label':"Settings"},
+]
 
-# Plot the data on the main plot
-ax.plot(x, y)
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_title('Main Plot')
-
-# Create two columns with widths in the ratio 2:1
-col1, col2 = st.columns([2, 1])
-
-# Full column for the main plot
-with col1:
-    # Display the main plot using Streamlit's pyplot function
-    st.pyplot(fig)
-
-# Second column with upper and lower plots
-with col2:
-    # Upper plot
-    with st.expander("Upper Plot"):
-        # Create a new figure and axes
-        fig_upper, ax_upper = plt.subplots()
-
-        # Plot the upper plot data
-        ax_upper.plot(x, y**2)
-        ax_upper.set_xlabel('X')
-        ax_upper.set_ylabel('Y^2')
-        ax_upper.set_title('Upper Plot')
-
-        # Display the upper plot using Streamlit's pyplot function
-        st.pyplot(fig_upper)
-
-    # Lower plot
-    with st.expander("Lower Plot"):
-        # Create a new figure and axes
-        fig_lower, ax_lower = plt.subplots()
-
-        # Plot the lower plot data
-        ax_lower.plot(x, np.cos(x))
-        ax_lower.set_xlabel('X')
-        ax_lower.set_ylabel('Cos(X)')
-        ax_lower.set_title('Lower Plot')
-
-        # Display the lower plot using Streamlit's pyplot function
-        st.pyplot(fig_lower)
+over_theme = {'txc_inactive': '#FFFFFF', 'menu_background':'#85929E'}
+st.markdown("# Nemo")
+main_tab= hc.nav_bar(
+    menu_definition=menu_data,
+    override_theme=over_theme,
+    home_name='Introduction',
+    #login_name='Logout',
+    hide_streamlit_markers=False, #will show the st hamburger as well as the navbar now!
+    sticky_nav=True, #at the top or not
+    sticky_mode='pinned', #jumpy or not-jumpy, but sticky or pinned
+)
+if main_tab == "Model & Parameters":
+    st.markdown("Here am I")
+#get the id of the menu item clicked
+#st.info(f"{menu_id}")
