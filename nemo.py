@@ -5,12 +5,35 @@
 
 
 import streamlit as st
+import hydralit_components as hc
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Set page layout to centered and responsive
-# st.set_page_config(layout="centered")
-# Set default values of parameters
+# st.set_page_config(layout="wide")
+st.set_page_config(layout='wide',initial_sidebar_state='collapsed')
+
+
+# specify the primary menu definition
+menu_data = [
+    {'icon': "far fa-copy", 'label':"Model & Parameters"},
+    {'icon': "far fa-chart-bar", 'label':"Simulation"},#no tooltip message
+    {'icon': "fas fa-tachometer-alt", 'label':"Settings"},
+]
+
+over_theme = {'txc_inactive': '#FFFFFF', 'menu_background':'#85929E'}
+st.markdown("# Nemo")
+main_tab= hc.nav_bar(
+    menu_definition=menu_data,
+    override_theme=over_theme,
+    home_name='Introduction',
+    #login_name='Logout',
+    hide_streamlit_markers=False, #will show the st hamburger as well as the navbar now!
+    sticky_nav=True, #at the top or not
+    sticky_mode='pinned', #jumpy or not-jumpy, but sticky or pinned
+)
+
+
 # Define default parameter values
 st.session_state.setdefault("a_freq", 0.05)
 st.session_state.setdefault("init_infest", 80.0)
@@ -32,7 +55,7 @@ s = 1
 v = [1] * st.session_state.num_generations
 
 # Set Streamlit app title
-st.title("Nemo")
+#st.title("Nemo")
 def dec2(x):
     d = round(x * 100) / 100
     return d
@@ -71,13 +94,12 @@ def generate_deployment_vector(input_string, n_gen):   #n_gen will be the global
         return vector
       
 def generate_main_plot(tot,f_A, f_a, Y, Z):
-    fig, ax = plt.subplots(figsize=(18, 14), dpi=100)
-    #ax.plot(np.arange(1, st.session_state.num_generations+1), np.divide(tot,st.session_state.N), '-r', linewidth=3)
-    ax.plot(np.arange(1, st.session_state.num_generations+1), tot, '-r', linewidth=3)
+    fig, ax = plt.subplots(figsize=(14, 10), dpi=100)
+    ax.plot(np.arange(1, st.session_state.num_generations+1), np.divide(tot,st.session_state.N), '-r', linewidth=3)
     ax.set_xlabel("Generations", fontsize=40)
-    ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
+    ax.set_ylabel("Cysts/g of soil (log)", fontsize=40)
     ax.set_xlim([1, st.session_state.num_generations])
-    ax.set_ylim([st.session_state.detection_threshold*st.session_state.N, st.session_state.M])
+    ax.set_ylim([st.session_state.detection_threshold, st.session_state.M/st.session_state.N])
     ax.set_yscale('log')
     ax.tick_params(axis='both', which='major', labelsize=30)
     
@@ -90,7 +112,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
         # Upper plot
         with st.expander("Frequency of avirulence allele A"):
             # Create a new figure and axes
-            fig_upper, ax_upper = plt.subplots(figsize=(10, 8), dpi=100)
+            fig_upper, ax_upper = plt.subplots(figsize=(8, 5), dpi=100)
 
             # Plot the upper plot data
             ax_upper.plot(np.arange(1, st.session_state.num_generations+1), f_A, linewidth=3)
@@ -105,7 +127,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
         # Lower plot
         with st.expander("Frequency of virulence allele a"):
             # Create a new figure and axes
-            fig_lower, ax_lower = plt.subplots(figsize=(10, 8), dpi=100)
+            fig_lower, ax_lower = plt.subplots(figsize=(8, 5), dpi=100)
 
             # Plot the lower plot data
             ax_lower.plot(np.arange(1, st.session_state.num_generations+1), f_a, linewidth=3)
@@ -118,18 +140,18 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
 
 
 # Main tab
-with st.sidebar:
-    main_tab = st.radio("Navigation", ["Introduction", "Model & Parameters", "Simulation", "Settings"])
+#with st.sidebar:
+#    main_tab = st.radio("Navigation", ["Introduction", "Model & Parameters", "Simulation", "Settings"])
 
 if main_tab == "Introduction":
     st.markdown("# Introduction")
     st.markdown("- Globodera pallida, or Potato Cyst Nematode (PCN), is a serious quarantine pest that threatens potato crops worldwide.")
-    st.markdown("- The use of resistant potato cultivars is a popular pest control measure, but the evolution of PCN populations towards virulence can reduce the long-term effectiveness of resistance-based control.")
+    st.markdown("- The use of resistant potato cultivars is a popular sustainable pest control measure, but the evolution of PCN populations towards virulence can reduce the long-term effectiveness of resistance-based control.")
     st.markdown("- Masculinizing resistance prevents avirulent nematodes from producing females, which could ultimately eliminate avirulent PCNs from the population.")
     st.markdown("- However, [Shouten's model](https://link.springer.com/article/10.1007/BF03041409) tracing genotypic frequencies in real conditions shows that the long-term fixation of the virulence allele does not necessarily occur despite the selection pressure.")
     st.markdown("- Avirulent nematodes, which are exclusively male, survive as heterozygotes by mating with virulent females, weakening the PCN's reproduction number.")
     st.markdown("- Biocontrol efficiency required for PCN long-term suppression under resistant plants is lower than under susceptible plants.")
-    st.markdown("- Combining masculinizing resistant cultivars with biocontrol methods appears to be an effective solution for suppressing PCN populations.")
+    st.markdown("- Combining resistant cultivars with biocontrol methods appears to be an effective solution for suppressing PCN populations.")
     st.markdown("- The model presented for this simulation tracks at the same time the PCN genetics and dynamics to describe selection for virulence and biocontrol needs under resistance.")
     st.markdown("- The user is able to enter the type of plant deployed in each generation (season) - S for Susceptible, R for Resistant - and the app will establish PCN's basic reproduction number $\mathcal{R}_0$, its threshold for nematode suppression , and the evolution of the PCN population as well as the corresponding allele frequencies.")
 
@@ -178,7 +200,7 @@ elif main_tab == "Model & Parameters":
 
         st.markdown(markdown_text)
     image2_path = "figs/diag_r0_marked.png"
-    st.image(image2_path)
+    st.image(image2_path, width=800)
     st.markdown("### Parameters")
     table_md = r'''
     | Parameter | Description | Value | Range |
@@ -224,8 +246,28 @@ elif main_tab == "Simulation":
     h = 0.88                           #Egg hatching success rate
     rr = 1                             #Avirulent pest sex ratio when resistance
     st.session_state.M = 145*st.session_state.N  #Limiting factor
-    v = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
     s = 1
+    colu1, colu2, colu3 = st.columns(3)
+    if not st.session_state.rep_deployment:
+        st.session_state.num_generations = len(st.session_state.deployment_type)
+    with colu1:
+        st.session_state.a_freq = st.slider("Initial frequency of the virulence allele (%):", min_value=0.0, max_value=99.9, value=st.session_state.a_freq*100, step=0.1)/100
+        st.session_state.deployment_type = st.text_input("Deployment type:", value=st.session_state.deployment_type)
+        st.session_state.deployment_type = st.session_state.deployment_type.upper()  # Convert input to uppercase
+        if not all(ch in ['R', 'S'] for ch in st.session_state.deployment_type):
+            st.error("Invalid deployment type. Please enter a string containing only 'R' or 'S'.")
+        st.session_state.rep_deployment = st.checkbox("Indefinitely repeat this deployment", value=True)
+    with colu2:
+        st.session_state.init_infest = st.slider("Initial infestation (cysts/g of soil):", min_value=0.1, max_value=240.0, value=st.session_state.init_infest, step=0.1)
+        if st.session_state.rep_deployment:
+            st.session_state.num_generations = st.slider("Number of generations (if checked):", min_value=1, max_value=100, value=st.session_state.num_generations, step=1)
+        else:
+            st.session_state.num_generations = len(st.session_state.deployment_type)
+    with colu3:
+        st.session_state.bc = st.slider("Efficacy of biocontrol (%):", min_value=0.0, max_value=99.9, value=st.session_state.bc*100, step=0.1)/100
+        st.session_state.detection_threshold = st.slider("Detection threshold (cysts/g of soil):", min_value=0.01, max_value=1.0, value=st.session_state.detection_threshold, step=0.01)
+        
+    v = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
     g = h*st.session_state.N*st.session_state.s_E*s*(1-st.session_state.bc)
     alpha = st.session_state.sv*st.session_state.rs/st.session_state.sav
     R0 = g*st.session_state.sv*(1-st.session_state.rs)
@@ -235,6 +277,15 @@ elif main_tab == "Simulation":
         thres = 1
     else:
         thres = float('-inf')
+    # Display R0
+    R0 = dec2(R0)
+    disp = thres if thres != float('-inf') else 'Unknown'
+    col1, col2, col3 = st.columns(3)  
+    with col1:
+        st.markdown(f"$R_0$ = {R0}")
+    with col2:
+        st.markdown(f"Suppression threshold = {disp}")
+    
     init_larvae = st.session_state.init_infest*st.session_state.N*h #Cysts x nbre of eggs per cyst * hatching success * converstion to 1ha field * field st.session_state.area
     J_AA_0 = (1-st.session_state.a_freq)**2*init_larvae
     J_Aa_0 = 2*st.session_state.a_freq*(1-st.session_state.a_freq)*init_larvae
@@ -277,34 +328,8 @@ elif main_tab == "Simulation":
         
         f_A[n] = f_AA[n] + f_Aa[n] / 2
         f_a[n] = f_aa[n] + f_Aa[n] / 2
-    # Display R0
-    R0 = dec2(R0)
-    disp = thres if thres != float('-inf') else 'Unknown'
-    cl1, cl2 = st.columns([1, 3])
-    cl1.markdown("")  # Placeholder for the first empty column
-    cl2.markdown(f"$R_0$ = {R0}")
-    cl2.markdown(f"Suppression threshold = {disp}")
     generate_main_plot(tot,f_A, f_a, Y, Z)
-    st.session_state.a_freq = st.slider("Frequency of the virulence allele (%):", min_value=0.0, max_value=99.9, value=st.session_state.a_freq*100, step=0.1)/100
-    st.session_state.init_infest = st.slider("Initial infestation (cysts/g of soil):", min_value=0.1, max_value=240.0, value=st.session_state.init_infest, step=0.1)
-    st.session_state.deployment_type = st.text_input("Deployment type:", value=st.session_state.deployment_type)
-    st.session_state.deployment_type = st.session_state.deployment_type.upper()  # Convert input to uppercase
-    if not all(ch in ['R', 'S'] for ch in st.session_state.deployment_type):
-        st.error("Invalid deployment type. Please enter a string containing only 'R' or 'S'.")
-    #update_button = st.button("Update")
-    st.session_state.rep_deployment = st.checkbox("Indefinitely repeat this deployment", value=True)
-    if st.session_state.rep_deployment:
-        st.session_state.num_generations = st.slider("Number of generations (if checked above):", min_value=1, max_value=100, value=st.session_state.num_generations, step=1)
-    else:
-        st.session_state.num_generations = len(st.session_state.deployment_type)
-    st.session_state.bc = st.slider("Efficacy of biocontrol (%):", min_value=0.0, max_value=99.9, value=st.session_state.bc*100, step=0.1)/100
-    st.session_state.detection_threshold = st.slider("Detection threshold (cysts/g of soil):", min_value=0.01, max_value=1.0, value=st.session_state.detection_threshold, step=0.01)
-    if not st.session_state.rep_deployment:
-        st.session_state.num_generations = len(st.session_state.deployment_type)
-elif main_tab == "User guide":
-    st.markdown("## User guide")
-    # Edit and add your user guide text here
-
+    
 elif main_tab == "Settings":
     st.markdown("# Settings")
     st.markdown("These parameters describe the basic biology of PCNs. They are retrieved from intensive literature review and cautious estimations. Please edit these settings if and only if you have enough knowledge!!")
@@ -314,10 +339,3 @@ elif main_tab == "Settings":
     st.session_state.s_E = st.slider("Survival of larvae from cysts (%):", min_value=0.010, max_value=10.0, value=st.session_state.s_E*100, step=0.001)/100
     st.markdown("(Includes suicidal hatching and larval desiccation)")
     st.session_state.N = st.slider("Average eggs per cyst:", min_value=200, max_value=500, value=st.session_state.N, step=1)
-
-
-# In[ ]:
-
-
-
-
