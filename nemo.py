@@ -37,7 +37,7 @@ main_tab= hc.nav_bar(
 # Define default parameter values
 st.session_state.setdefault("a_freq", 0.0167)
 st.session_state.setdefault("init_infest_cyst", 2.0)
-st.session_state.setdefault("deployment_type", "RRRRR")
+st.session_state.setdefault("deployment_type", "RBBBBRBBBBRBBBBRBBBBR")
 st.session_state.setdefault("bc", 0.0)
 st.session_state.setdefault("sav", 0.25)
 st.session_state.setdefault("sv", 0.25)
