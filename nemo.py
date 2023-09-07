@@ -53,7 +53,7 @@ step = 0.01
 # Define parameter values for reset
 st.session_state.setdefault("reset_a_freq", 0.0167)
 st.session_state.setdefault("reset_init_infest_cyst", 2.0)
-st.session_state.setdefault("reset_deployment_type", "RRRRR")
+st.session_state.setdefault("reset_deployment_type", "RNNNNRNNNNRNNNNRNNNNR")
 st.session_state.setdefault("reset_bc", 0.0)
 st.session_state.setdefault("reset_sav", 0.25)
 st.session_state.setdefault("reset_sv", 0.25)
