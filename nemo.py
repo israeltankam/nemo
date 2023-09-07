@@ -46,7 +46,7 @@ st.session_state.setdefault("ha", 0.1705)
 st.session_state.setdefault("v", 0.9031)
 st.session_state.setdefault("M", 73.9)
 st.session_state.setdefault("k", 300)
-st.session_state.setdefault("detection_threshold", 0.001)
+st.session_state.setdefault("detection_threshold", 0)
 step = 0.01
                             
 
@@ -62,7 +62,7 @@ st.session_state.setdefault("reset_ha", 0.1705)
 st.session_state.setdefault("reset_v", 0.9031)
 st.session_state.setdefault("reset_M", 73.9)
 st.session_state.setdefault("reset_k", 300)
-st.session_state.setdefault("reset_detection_threshold", 0.001)
+st.session_state.setdefault("reset_detection_threshold", 0)
 
 # Set Streamlit app title
 #st.title("Nemo")
@@ -142,7 +142,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z,R):
     ax.set_xlabel("Generations", fontsize=40)
     ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
     ax.set_xlim([1, nb_gen])
-    ax.set_ylim([st.session_state.detection_threshold, st.session_state.M*(R-1)])
+    ax.set_ylim([(10**st.session_state.detection_threshold)/st.session_state.k, st.session_state.M*(R-1)])
     ax.set_yscale('log')
     ax.tick_params(axis='both', which='major', labelsize=30)
     
@@ -378,7 +378,7 @@ elif main_tab == "Simulation":
         st.text(st.session_state.deployment_type)
     with colu3:
         st.session_state.bc = st.slider("Efficacy of biocontrol (%):", min_value=0.0, max_value=99.9, value=st.session_state.bc*100, step=0.1)/100
-        st.session_state.detection_threshold = st.slider("Detection threshold (cysts/g of soil):", min_value=0.001, max_value=1.0, value=st.session_state.detection_threshold, step=0.001)
+        st.session_state.detection_threshold = st.slider(f"Detection threshold (10$^\square)$ cysts/g of soil):", min_value=-6, max_value=1, value=int(st.session_state.detection_threshold), step=1)
         
     #u = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
     u, jn = generate_deployment_vector(st.session_state.deployment_type)
