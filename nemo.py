@@ -46,7 +46,7 @@ st.session_state.setdefault("ha", 0.1705)
 st.session_state.setdefault("v", 0.9031)
 st.session_state.setdefault("M", 73.9)
 st.session_state.setdefault("k", 300)
-st.session_state.setdefault("detection_threshold", 0.1)
+st.session_state.setdefault("detection_threshold", 0.001)
 step = 0.01
                             
 
@@ -62,7 +62,7 @@ st.session_state.setdefault("reset_ha", 0.1705)
 st.session_state.setdefault("reset_v", 0.9031)
 st.session_state.setdefault("reset_M", 73.9)
 st.session_state.setdefault("reset_k", 300)
-st.session_state.setdefault("reset_detection_threshold", 0.1)
+st.session_state.setdefault("reset_detection_threshold", 0.001)
 
 # Set Streamlit app title
 #st.title("Nemo")
@@ -218,13 +218,13 @@ elif main_tab == "Model & Parameters":
         st.markdown("- When resistance plants are deployed in every generation, the overall PCN population $N_n$ at generation $n$ is given by the law:")
         st.latex(r'''
         \begin{equation*}
-                \left\{\begin{aligned}
-                    N_{n+1} &= \displaystyle\frac{R_jM}{M+N_n}N_n(2a_n-1) \\
-                    a_{n+1} &= \frac{1}{2}\Bigg[\displaystyle\frac{2M_a(2a_n-1) + 3 M_A(1-a_n)}{M_a(2a_n-1) + 2M_A(1-a_n)}\Bigg]
-                \end{aligned}\right.
+            \left\{\begin{aligned}
+                N_{n+1} &= R_jMv_n\displaystyle\frac{N_n}{M+N_n}\\
+                v_{n+1} &= \displaystyle\frac{mv_n + \frac{1}{2}(1-v_n)}{mv_n + (1-v_n)}
+        \end{aligned}\right.
         \end{equation*}
         ''')
-        st.markdown("Where $N_n$ tracks the population dynamics while $a_n$ tracks the frequency of allele $a_n$. $M_A$ (resp. $M_a$) is the proportion larvae that becomes avirulent (resp. virulent) male adults")
+        st.markdown("Where $N_n$ tracks the population dynamics while $v_n$ tracks the frequency of virulent nematodes (aa) and $m$ represents the relative proportion of juveniles that develop into virulent males to those that develop into avirulent males")
     st.markdown("### Basic reproduction number and effective reproduction number")
     checkbox = st.checkbox("Read the text")
     if checkbox:
@@ -235,7 +235,7 @@ elif main_tab == "Model & Parameters":
         ''')
         st.markdown("- The basic growth factor G is the product of the average number of larvae per cyst ($k$), the viability of encysted larvae ($v$), and the ratio of cysts that survived accidental hatching ($1-h_a$).")
         st.latex(r'''
-        \begin{equation*}G_0 = kv(1-h_a)
+        \begin{equation*}G_0 = k\nu(1-h_a)
         \end{equation*}
         ''')
         st.markdown("- The effective reproduction number is the basic reproduction number under control measures. Given an effective growth factor $G_j$ detailled after, the effectif population number takes the following form")
@@ -245,15 +245,15 @@ elif main_tab == "Model & Parameters":
         ''')
         st.markdown("- When a regular PCBs of size $j$ are implemented along with a biocontrol of efficacy $\beta_c$, the effective growth factor takes the following form.")
         st.latex(r'''
-        \begin{equation*}G_j = k[v(1-h_a)(1-\beta_c)]^{j+1}
+        \begin{equation*}G_j = k[\nu(1-h_a)(1-\beta_c)]^{j+1}
         \end{equation*}
         ''')
         markdown_text = r'''
         Blocking resistances disappear completely over time provided that the resistance gene is fixed by natural selection. Thus, as with susceptible plants, the long-term suppression of PCNs must be ensured by a biocontrol that brings the effective reproduction number $\mathcal{R}_j$ of PCNs below 1.
 
-        On the other hand, masculinizing resistances keep a partial resistance indefinitely. This is conditioned by a parameter $\alpha = \frac{M_a}{M_A}$ which is the ratio between the larvae 
-        which produce male adults and those which produce female adults. When $\alpha < \frac{1}{2}$, which is the case in reality, it suffices to ensure the long-term suppression of PCN
-        that the biocontrol brings $\mathcal{R}_j$ below $2(1-\alpha)$, which can make a significant difference as shown in the figure below. Partial resistance is ensured by the survival
+        On the other hand, masculinizing resistances keep a partial resistance indefinitely. This is conditioned by a parameter $m = \frac{M_a}{M_A}$ which is the ratio between the larvae 
+        which produce male adults and those which produce female adults. When $m < \frac{1}{2}$, which is the case in reality, it suffices to ensure the long-term suppression of PCN
+        that the biocontrol brings $\mathcal{R}_j$ below $2(1-m)$, which can make a significant difference as shown in the figure below. Partial resistance is ensured by the survival
         of susceptible phenotype through the pairing of avirulent males with virulent females.
         '''
 
@@ -285,7 +285,7 @@ elif main_tab == "Model & Parameters":
     | $s_{av}$ | Survival rate of virulent PCNs on resistant plants | $25\%$ | [0,100\%] |
     | $r$ | Average male allocation on susceptible plants | $35\%$ | (0, 35\%] |
     | $k$ | Average number of eggs per cyst | 300 | [200, 500] |
-    | $v$ | Viability of encysted larvae | $90.31\%$ | [80, 99.9\%] |
+    | $\nu$ | Viability of encysted larvae | $90.31\%$ | [80, 99.9\%] |
     | $h_a$ | Yearly rate of accidental PCN hatching | 17.05% | [0, 35\%] |
     | $\beta_c$ | Efficacy of the biocontrol | variable | [0, 99.9\%] |
     | $M$ | PCN limiting factor | 73.9  | --ajusted-- |
@@ -378,7 +378,7 @@ elif main_tab == "Simulation":
         st.text(st.session_state.deployment_type)
     with colu3:
         st.session_state.bc = st.slider("Efficacy of biocontrol (%):", min_value=0.0, max_value=99.9, value=st.session_state.bc*100, step=0.1)/100
-        st.session_state.detection_threshold = st.slider("Detection threshold (cysts/g of soil):", min_value=0.01, max_value=1.0, value=st.session_state.detection_threshold, step=0.01)
+        st.session_state.detection_threshold = st.slider("Detection threshold (cysts/g of soil):", min_value=0.001, max_value=1.0, value=st.session_state.detection_threshold, step=0.001)
         
     #u = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
     u, jn = generate_deployment_vector(st.session_state.deployment_type)
