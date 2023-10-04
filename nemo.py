@@ -41,10 +41,10 @@ st.session_state.setdefault("deployment_type", "RNNNNRNNNNRNNNNRNNNNR")
 st.session_state.setdefault("bc", 0.0)
 st.session_state.setdefault("s", 0.25)
 st.session_state.setdefault("m", 0.35)
-st.session_state.setdefault("ha", 0.1705)
-st.session_state.setdefault("v", 0.9031)
+st.session_state.setdefault("ha", 0.17)
+st.session_state.setdefault("v", 0.90)
 st.session_state.setdefault("M", 15.9)
-st.session_state.setdefault("k", 300)
+st.session_state.setdefault("e", 300)
 st.session_state.setdefault("detection_threshold", -3)
 step = 0.01
                             
@@ -56,10 +56,10 @@ st.session_state.setdefault("reset_deployment_type", "RNNNNRNNNNRNNNNRNNNNR")
 st.session_state.setdefault("reset_bc", 0.0)
 st.session_state.setdefault("reset_s", 0.25)
 st.session_state.setdefault("reset_m", 0.35)
-st.session_state.setdefault("reset_ha", 0.1705)
-st.session_state.setdefault("reset_v", 0.9031)
+st.session_state.setdefault("reset_ha", 0.17)
+st.session_state.setdefault("reset_v", 0.90)
 st.session_state.setdefault("reset_M", 15.9)
-st.session_state.setdefault("reset_k", 300)
+st.session_state.setdefault("reset_e", 300)
 st.session_state.setdefault("reset_detection_threshold", -3)
 
 # Set Streamlit app title
@@ -128,7 +128,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z,R):
     fig, ax = plt.subplots(figsize=(14, 10), dpi=100)
     nb_gen = len(tot)
     ax.plot(np.arange(1, nb_gen+1), tot, '-r', linewidth=3)
-    th = st.session_state.k*10**(st.session_state.detection_threshold)
+    th = st.session_state.e*10**(st.session_state.detection_threshold)
     ax.plot([0, nb_gen], [th, th], 'k--', label='Detection threshold')
     ax.set_xlabel("Generations", fontsize=40)
     ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
@@ -183,17 +183,17 @@ def generate_main_plot(tot,f_A, f_a, Y, Z,R):
 
 if main_tab == "Introduction":
     st.markdown("# Introduction")
-    st.markdown("- Globodera pallida, or Potato Cyst Nematode (PCN), is a serious quarantine pest that threatens potato crops worldwide.")
+    st.markdown("- Globodera pallida, or Pale Cyst Nematode (PCN), is a serious quarantine pest that threatens potato crops worldwide.")
     st.markdown("- The use of resistant potato cultivars is a popular sustainable pest control measure, but the evolution of PCN populations towards virulence can reduce the long-term effectiveness of resistance-based control.")
     st.markdown("- Masculinizing resistance prevents avirulent nematodes from producing females, which could ultimately eliminate avirulent PCNs from the population.")
     st.markdown("- However, [Shouten's model](https://link.springer.com/article/10.1007/BF03041409) tracing genotypic frequencies in real conditions shows that the long-term fixation of the virulence allele does not necessarily occur despite the selection pressure.")
     st.markdown("- Avirulent nematodes, which are exclusively male, survive as heterozygotes by mating with virulent females, weakening the PCN's reproduction number.")
     st.markdown("- Biocontrol efficiency required for PCN long-term suppression under resistant plants is lower than under susceptible plants.")
     st.markdown("- But the efficiency required even under resistant plant can be very high, thus unachievable")
-    st.markdown("- Potato Cultivation Breaks (PCBs) are proven to be an efficient and sustainable lever of PCN control, but required long periods of cultivating non-host crops or leaving a bare soil")
-    st.markdown("- Combining resistant cultivars with biocontrol methods and PCBs appears to be an effective solution for speeding up the suppression of PCN populations.")
-    st.markdown("- The model presented for this simulation tracks at the same time the PCN genetics and dynamics to describe selection for virulence and biocontrol+PCB size needs under resistance.")
-    st.markdown("- The user is able to enter the type of crop for each season - S for Susceptible, R for Resistant, N for Non-host (corresponding to a PCB) - and the app will draw the PCN population trajectories as well as the corresponding allele frequencies.")
+    st.markdown("- Rotations are proven to be an efficient and sustainable lever of PCN control, but required long periods of cultivating non-host crops or leaving a bare soil")
+    st.markdown("- Combining resistant cultivars with biocontrol methods and rotations appears to be an effective solution for speeding up the suppression of PCN populations.")
+    st.markdown("- The model presented for this simulation tracks at the same time the PCN genetics and dynamics to describe selection for virulence and biocontrol+rotation size needs under resistance.")
+    st.markdown("- The user is able to enter the type of crop for each season - S for Susceptible, R for Resistant, N for Non-host (corresponding to a rotation) - and the app will draw the PCN population trajectories as well as the corresponding allele frequencies.")
 
 elif main_tab == "Model & Parameters":
     st.markdown("# Model & parameters")
@@ -202,79 +202,62 @@ elif main_tab == "Model & Parameters":
     checkbox = st.checkbox("See the simple models")
     if checkbox:
         st.markdown("$X_n \longrightarrow AA$ PCNs, $\qquad Y_n \longrightarrow Aa$ PCNs, $\qquad Z_n \longrightarrow aa$ PCNs")
-        st.markdown("- When susceptible plants are deployed in every generation and PCBs of size $j$ are always implemented between generations, the overall PCN population $N_n$ at generation $n$ is given by the law:")
+        st.markdown("- When susceptible plants are deployed in every generation and $j$-years rotations are always implemented between generations, the overall PCN population $N_k$ at generation $k$ is given by the law:")
         st.latex(r'''
         \begin{equation*}
-            N_{n+1}  = \frac{R_jMN_n}{M + N_n}, 
+            N_{k+1} = (1-m)R_j \displaystyle\frac{K N_k}{K+ N_k\big( (1-m)R_j - 1 \big)} 
         \end{equation*}
         ''')
-        st.markdown("Where $\bar{R}_j(1-m)$ is the PCN female-adjusted basic reproduction number under $j$-year PCBs, and M is a population limiting fator due to competition. The different genotype frequencies are given by the Hardy-Weinberg principle.")
-        st.markdown("- When resistance plants are deployed in every generation, the overall PCN population $N_n$ at generation $n$ is given by the law:")
+        st.markdown("Where $R_j$ is the PCN reproduction number under $j$-year rotations (corresponding to a basic reproduction number $(1-m)R_j$) and K is the nematode carrying capacity. The different genotype frequencies are given by the Hardy-Weinberg principle.")
+        st.markdown("- When resistance plants are deployed in every generation, the overall PCN population $N_k$ at generation $k$ is given by the law:")
         st.latex(r'''
         \begin{equation*}
             \left\{\begin{aligned}
-                N_{n+1} &= R_jMv_n\displaystyle\frac{N_n}{M+N_n}\\
-                v_{n+1} &= \displaystyle\frac{mv_n + \frac{1}{2}(1-v_n)}{mv_n + (1-v_n)}
+                N_{k+1} &= (1-m)R_j \displaystyle\frac{K N_k}{K+ N_k\big( (1-m)R - 1 \big)}v_k\\
+                v_{k+1} &= \displaystyle\frac{m v_k + \frac{1}{2}(1-v_k)}{m v_k + (1-v_k)}
         \end{aligned}\right.
         \end{equation*}
         ''')
-        st.markdown("Where $N_n$ tracks the population dynamics while $v_n$ tracks the frequency of virulent nematodes (aa) and $m$ represents the relative proportion of juveniles that develop into virulent males to those that develop into avirulent males")
+        st.markdown("Where $N_k$ tracks the population dynamics while $v_k$ tracks the frequency of virulent nematodes (aa) and $m$ represents the relative proportion of juveniles that develop into virulent males to those that develop into avirulent males")
     st.markdown("### Basic reproduction number")
     checkbox = st.checkbox("Read the text")
     if checkbox:
-        st.markdown("- When regular $j$-years PCBs are implemented along with a biocontrol of efficacy $\beta$, the basic reproduction number takes the following form.")
+        st.markdown("- When regular $j$-years rotations are implemented along with a biocontrol of efficacy $b$, the $R_j$ reproduction number takes the following form.")
         st.latex(r'''
-        \begin{equation*}G_j = ks[\nu(1-h_a)(1-\beta_c)]^{j+1}(1-m),
+        \begin{equation*}R_j = es[w(1-h_a)(1-b)]^{j+1},
         \end{equation*}
         ''')
         st.markdown("Where s is the proportion of larvae that survive the larval stage to become adults.")
         
         markdown_text = r'''
-        We introduce the notion of `female-adjusted basic reprodution number' $\bar{R}_j = R_j/(1-m)$.
         
-        Blocking resistances quickly become obsolete as the resistance gene is fixed by natural selection. Thus, as with susceptible plants, the long-term suppression of PCNs must be ensured by a biocontrol that brings the female-adjusted basic reprodution number $\bar{R}_j$ of PCNs below 1/(1-m).
+        
+        Blocking resistances quickly become obsolete as the resistance gene is fixed by natural selection. Thus, as with susceptible plants, the long-term suppression of PCNs must be ensured by a biocontrol that brings the nematode reprodution number $R_j$ below 1/(1-m).
 
         On the other hand, masculinizing resistances keep a partial resistance indefinitely. This is conditioned by the male allocation rate $m$. When $m < \frac{1}{2}$, which is the case in real setups, it suffices to ensure the long-term suppression of PCNs
-        that control efforts bring the female-adjusted basic reproduction number $\bar{R}_j$ below $2$. The partial resistance is ensured by the survival
+        that control efforts bring the reproduction number $R_j$ below $2$. The partial resistance is ensured by the survival
         of susceptible phenotype through the pairing of avirulent males with virulent females.
         '''
 
         st.markdown(markdown_text)
     image2_path = "figs/scenario_diagram.png"
     st.image(image2_path, width=1000)
-    checkbox = st.checkbox("Read annotations")
-    if checkbox:
-        markdown_text_annotations = r'''
-        (1) $25\%$ biocontrol efficacy without PCB
-        
-        (2) $36\%$ biocontrol efficacy without PCB
-        
-        (3) $36\%$ biocontrol efficacy with 1-year PCB
-        
-        (4) $36\%$ biocontrol efficacy with 2-years PCB
-        
-        (5) $36\%$ biocontrol efficacy with 3-years PCB
-        
-        (6) $36\%$ biocontrol efficacy with 4-years PCB
-        '''
-        
-        st.markdown(markdown_text_annotations)
     st.markdown("### Parameters")
     table_md = r'''
     | Parameter | Description | Value | Range |
     | --- | --- | --- | --- |
     | $s$ | Survival rate of hatched larvae | $25\%$ | [0,100\%] |
     | $m$ | Male allocation on susceptible plants | $35\%$ | (0, 35\%] |
-    | $k$ | Average number of eggs per cyst | 300 | [200, 500] |
-    | $\nu$ | Viability of encysted larvae | $90.31\%$ | [80, 99.9\%] |
-    | $h_a$ | Yearly rate of accidental PCN hatching | 17.05% | [0, 35\%] |
-    | $\beta_c$ | Efficacy of the biocontrol | variable | [0, 99.9\%] |
-    | $M$ | PCN limiting factor | 15.9  | --ajusted-- |
+    | $e$ | Average number of eggs per cyst | 300 | [200, 500] |
+    | $w$ | Yearly viability of encysted larvae | $90\%$ | [80, 99.9\%] |
+    | $h_a$ | Yearly rate of accidental hatching | 17% | [0, 35\%] |
+    | $b$ | Efficacy of the biocontrol | variable | [0, 99.9\%] |
+    | $K$ | Nematode carrying capacity| 200 g$^{-1}$ soil | --ajusted-- |
     |  | Detection (cleaning) threshold | 0.01 cyst/g of soil | [0.01, 0.1] cyst/ g of soil |
     '''
     st.markdown(table_md)
-    st.markdown("In this table as in the simulation, the **efficacy of biocontrol** is modulable and we can analyze its effect on the PCN reproduction number and suppression. Other modulable parameters for simulation are the **initial frequency of virulence allele** and the **initial soil infestation**.")
-    st.markdown("The detection threshold defines the PCN level below which the field is considered clean")
+    #st.markdown("In this table as in the simulation, the **efficacy of biocontrol** is modulable and we can analyze its effect on the PCN reproduction number and suppression. Other modulable parameters for simulation are the **initial frequency of virulence allele** and the **initial soil infestation**.")
+    #st.markdown("The detection threshold defines the PCN level below which the field is considered clean")
     st.markdown("The simulation allows to choose the plant breed which is deployed per season. The other parameters, very little variable and estimated on literature data, are in the Settings menu.")
     # Create a checkbox to toggle the hidden content
     checkbox = st.checkbox("See the general model")
@@ -282,16 +265,16 @@ elif main_tab == "Model & Parameters":
         st.markdown("- More generally, under arbitrary deployment of susceptible and resistant plants, the model reads:")
         st.latex(r'''
         \begin{equation*}
-                \left\{\begin{aligned}
-                X_{n+1} &= \frac{G_{j_n} M}{M + (X_n+Y_n+Z_n)} \displaystyle\frac{M_A(n)F_A(n)\big(X_n + \frac{1}{2}Y_n\big)^2}{M_A(n)(X_n+Y_n) + M_a(n)Z_n}, \\
-                \\
-                Y_{n+1} &= \frac{G_{j_n} M}{M + (X_n+Y_n+Z_n)}  \displaystyle\frac{M_A(n)\big(F_a(n)Z_n + \frac{1}{2}F_A(n)Y_n \big)\big(X_n + \frac{1}{2}Y_n \big) + F_A(n)\big(X_n + \frac{1}{2}Y_n \big)\big(M_a(n)Z_n + \frac{1}{2}M_A(n)Y_n \big) }{M_A(n)(X_n+Y_n) + M_a(n)Z_n},\\
-                \\
-                Z_{n+1} &= \frac{G_{j_n} M}{M + (X_n+Y_n+Z_n)} \displaystyle\frac{\big(F_a(n)Z_n + \frac{1}{2}F_A(n)Y_n\big)\big(M_a(n)Z_n + \frac{1}{2}M_A(n)Y_n\big)}{M_A(n)(X_n+Y_n) + M_a(n)Z_n},
-            \end{aligned}\right.
-        \end{equation*}
+            \left\{\begin{aligned}
+            X_{k+1} &= \frac{G_{j_k} M}{M + (X_k+Y_k+Z_k)} \displaystyle\frac{M_A(k)F_A(k)\big(X_k + \frac{1}{2}Y_k\big)^2}{M_A(k)(X_k+Y_k) + M_a(k)Z_k}, \\
+        \\
+        Y_{k+1} &=  \frac{G_{j_k} M}{M + (X_k+Y_k+Z_k)}  \displaystyle\frac{M_A(k)\big(F_a(k)Z_k + \frac{1}{2}F_A(k)Y_k \big)\big(X_k + \frac{1}{2}Y_k \big) + F_A(k)\big(X_k + \frac{1}{2}Y_k \big)\big(M_a(k)Z_k + \frac{1}{2}M_A(k)Y_k \big) }{M_A(k)(X_k+Y_k) + M_a(k)Z_k},\\
+        \\
+        Z_{k+1} &= \frac{G_{j_k} M}{M + (X_k+Y_k+Z_k)} \displaystyle\frac{\big(F_a(k)Z_k + \frac{1}{2}F_A(k)Y_k\big)\big(M_a(k)Z_k + \frac{1}{2}M_A(k)Y_k\big)}{M_A(k)(X_k+Y_k) + M_a(k)Z_k},
+        \end{aligned}\right.
+    \end{equation*}
         ''')
-        st.markdown("Where $F_A$ (resp. $F_a$) is the proportion larvae that becomes avirulent (resp. virulent) female adults, and $G_{j_n}$ is the generation $n$'s growth factor provided there is a size-$j_n$ PCB after generation $n$.")
+        st.markdown("Where $F_A$ (resp. $F_a$) is the proportion larvae that becomes avirulent (resp. virulent) female adults, $G_{j_k}$ is the generation $k$'s growth factor ($G_{j_k} = e[w(1-h_a)(1-b)]^{j_k+1}$ ) provided there is are $j_k$-year rotations after generation $k$, and $M$ is a limiting factor.")
     # Add a link to expand/collapse the hidden content
     #st.markdown("[Expand / Collapse](javascript:void(0);)")
     
@@ -299,18 +282,17 @@ elif main_tab == "Model & Parameters":
 elif main_tab == "Simulation":
     st.markdown("# Simulation")
     if st.button("Reset all"):
-        st.session_state.a_freq = st.session_state.meset_a_freq
-        st.session_state.init_infest_cyst = st.session_state.meset_init_infest_cyst
-        st.session_state.deployment_type = st.session_state.meset_deployment_type
-        st.session_state.bc = st.session_state.meset_bc
-        st.session_state.sav = st.session_state.meset_sav
-        st.session_state.sv = st.session_state.meset_sv
-        st.session_state.m = st.session_state.meset_r
-        st.session_state.ha = st.session_state.meset_ha
-        st.session_state.v = st.session_state.meset_v
-        st.session_state.M = st.session_state.meset_M
-        st.session_state.k = st.session_state.meset_k
-        st.session_state.detection_threshold = st.session_state.meset_detection_threshold
+        st.session_state.a_freq = st.session_state.reset_a_freq
+        st.session_state.init_infest_cyst = st.session_state.reset_init_infest_cyst
+        st.session_state.deployment_type = st.session_state.reset_deployment_type
+        st.session_state.bc = st.session_state.reset_bc
+        st.session_state.s = st.session_state.reset_s
+        st.session_state.m = st.session_state.reset_m
+        st.session_state.ha = st.session_state.reset_ha
+        st.session_state.v = st.session_state.reset_v
+        st.session_state.M = st.session_state.reset_M
+        st.session_state.e = st.session_state.reset_e
+        st.session_state.detection_threshold = st.session_state.reset_detection_threshold
     # Other parameters
     colu1, colu2, colu3 = st.columns(3)
     with colu1:
@@ -367,7 +349,7 @@ elif main_tab == "Simulation":
     #st.markdown(str(jn))
     if u!=[] and len(u)>len(jn):
         #st.markdown("This is it")
-        init_juveniles = st.session_state.init_infest_cyst*st.session_state.k
+        init_juveniles = st.session_state.init_infest_cyst*st.session_state.e
         J_AA_0 = init_juveniles * (1-st.session_state.a_freq)**2
         J_Aa_0 = init_juveniles * 2 * st.session_state.a_freq*(1-st.session_state.a_freq)
         J_aa_0 = init_juveniles * (st.session_state.a_freq)**2
@@ -375,22 +357,22 @@ elif main_tab == "Simulation":
         # --------------------- thresholds ----------------------------- #
         # ------ jn-growth factors ------------
 
-        Gjn = [st.session_state.k * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1) for j in jn]
+        Gjn = [st.session_state.e * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1) for j in jn]
 
         # -------- basic reproduction number ---------
-        G0 = st.session_state.k * (st.session_state.v * (1 - st.session_state.ha))
+        G0 = st.session_state.e * (st.session_state.v * (1 - st.session_state.ha))
         R0 = G0 * st.session_state.s * (1 - st.session_state.m)
 
         # ------  alpha -----------------
         alpha = st.session_state.m
 
         # ------ Effective population number -----------
-        # ------ valid if PCB are same-sized -----------
+        # ------ valid if rotation are same-sized -----------
         if all(j == jn[0] for j in jn) and len(jn)>= 1:
             j = jn[0]
-            Gj = st.session_state.k * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1)
+            Gj = st.session_state.e * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1)
             Rj = R0 * (Gj / G0)
-            #st.markdown("Regular PCB of"); st.markdown(jn[0])
+            #st.markdown("Regular rotation of"); st.markdown(jn[0])
         else:
             Rj = float('inf')
     
@@ -447,6 +429,6 @@ elif main_tab == "Settings":
     st.markdown("These parameters describe the basic biology of PCNs. They are retrieved from intensive literature review and cautious estimations. Please edit these settings if and only if you have enough knowledge!!")
     st.session_state.s = st.slider("Survival rate of hatched larvae (%):", min_value=0.0, max_value=100.0, value=st.session_state.s*100, step=0.1)/100
     st.session_state.m = st.slider("Average male allocation on susceptible potato (%):", min_value=0.0, max_value=40.0, value=st.session_state.m*100, step=0.1)/100
-    st.session_state.v = st.slider("Viability of encysted juveniles (%):", min_value=80.0, max_value=99.9, value=st.session_state.v*100, step=0.001)/100
-    st.session_state.ha = st.slider("Yearly rate of accidental hatching (%):", min_value=0.0, max_value=35.0, value=st.session_state.ha*100, step=0.001)/100
-    st.session_state.k = st.slider("Average eggs per cyst:", min_value=200, max_value=500, value=st.session_state.k, step=1)
+    st.session_state.v = st.slider("Viability of encysted juveniles (%):", min_value=80, max_value=100, value=int(st.session_state.v*100), step=1)/100
+    st.session_state.ha = st.slider("Yearly rate of accidental hatching (%):", min_value=0, max_value=35, value=int(st.session_state.ha*100), step=1)/100
+    st.session_state.e = st.slider("Average eggs per cyst:", min_value=200, max_value=500, value=st.session_state.e, step=1)
