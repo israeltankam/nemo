@@ -1,54 +1,30 @@
 import streamlit as st
-from streamlit import session_state
-import hydralit_components as hc
 
-#make it look nice from the start
-st.set_page_config(layout='wide',initial_sidebar_state='collapsed')
-st.session_state.setdefault("deployment_type", "")
-# specify the primary menu definition
-menu_data = [
-    {'icon': "far fa-copy", 'label':"Model & Parameters"},
-    {'icon': "far fa-chart-bar", 'label':"Simulations"},#no tooltip message
-    {'icon': "fas fa-tachometer-alt", 'label':"Settings"},
-]
+def main():
+    st.title("Dynamic Sliders")
 
-over_theme = {'txc_inactive': '#FFFFFF', 'menu_background':'#85929E'}
-st.markdown("# Nemo")
-main_tab= hc.nav_bar(
-    menu_definition=menu_data,
-    override_theme=over_theme,
-    home_name='Introduction',
-    #login_name='Logout',
-    hide_streamlit_markers=False, #will show the st hamburger as well as the navbar now!
-    sticky_nav=True, #at the top or not
-    sticky_mode='pinned', #jumpy or not-jumpy, but sticky or pinned
-)
-if main_tab == "Model & Parameters":
+    # Get the number of seasons from the user
+    num_seasons = st.number_input("Enter the number of seasons (n)", min_value=1, max_value=10, value=3, step=1)
 
-    st.markdown("Click to select a type of crop to deploy. Do not begin nor end with Non-host.")
+    # Create a scrolling menu to select the season
+    selected_season = st.selectbox("Select Season", range(1, num_seasons + 1))
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    if col1.button("Susceptible"):
-        st.session_state.deployment_type += "S"
+    # Initialize session state to store slider values
+    if 'slider_values' not in st.session_state:
+        st.session_state.slider_values = {}
 
-    if col2.button("Resistant"):
-        st.session_state.deployment_type += "R"
+    # Create sliders for each season and show/hide based on the selected season
+    for k in range(1, num_seasons + 1):
+        season_name = f"Season {k}"
 
-    if col3.button("Non-host"):
-        st.session_state.deployment_type += "N"
+        if k == selected_season:
+            # Use the stored value if available, otherwise initialize to 0.0
+            progress = st.slider(f"{season_name} Progress", 0.0, 0.999, st.session_state.slider_values.get(k, 0.0), key=f"slider_{k}")
+            st.session_state.slider_values[k] = progress  # Store the slider value in session state
+        else:
+            # If it's not the selected season, show the stored value without the slider
+            progress = st.session_state.slider_values.get(k, 0.0)
+        st.write(f"{season_name}: {progress:.1%}")
 
-    if col4.button("Delete"):
-        if len(st.session_state.deployment_type) > 0:
-            st.session_state.deployment_type = st.session_state.deployment_type[:-1]
-
-    if col5.button("Erase"):
-        st.session_state.deployment_type = ""
-
-    # Display the deployment type
-    st.markdown("Deployment type")
-    
-    st.text(st.session_state.deployment_type)
-
-#get the id of the menu item clicked
-#st.info(f"{menu_id}")
+if __name__ == "__main__":
+    main()

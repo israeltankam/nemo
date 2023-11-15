@@ -8,7 +8,6 @@ import streamlit as st
 import hydralit_components as hc
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 # Set page layout to centered and responsive
 # st.set_page_config(layout="wide")
@@ -37,107 +36,104 @@ main_tab= hc.nav_bar(
 
 # Define default parameter values
 st.session_state.setdefault("a_freq", 0.0167)
-st.session_state.setdefault("init_infest_cyst", 0.3)
+st.session_state.setdefault("init_infest_cyst", 0.5)
+st.session_state.setdefault("deployment_type", "RNNNNRNNNNRNNNNRNNNNR")
+st.session_state.setdefault("bc", 0.0)
 st.session_state.setdefault("s", 0.25)
 st.session_state.setdefault("m", 0.35)
 st.session_state.setdefault("ha", 0.17)
-st.session_state.setdefault("w", 0.90)
-st.session_state.setdefault("K", 170)
+st.session_state.setdefault("v", 0.90)
+st.session_state.setdefault("M", 15.9)
 st.session_state.setdefault("e", 300)
 st.session_state.setdefault("detection_threshold", -3)
-st.session_state.setdefault("num_years", 10)
-st.session_state.setdefault("bc_vector", [])
-st.session_state.setdefault("all_bc", 0.0)
-st.session_state.setdefault("all_types", 1)
-st.session_state.setdefault("plant_type_vector", [])
 step = 0.01
                             
 
 # Define parameter values for reset
 st.session_state.setdefault("reset_a_freq", 0.0167)
 st.session_state.setdefault("reset_init_infest_cyst", 0.5)
+st.session_state.setdefault("reset_deployment_type", "RNNNNRNNNNRNNNNRNNNNR")
+st.session_state.setdefault("reset_bc", 0.0)
 st.session_state.setdefault("reset_s", 0.25)
 st.session_state.setdefault("reset_m", 0.35)
 st.session_state.setdefault("reset_ha", 0.17)
-st.session_state.setdefault("reset_w", 0.90)
-st.session_state.setdefault("reset_K", 170)
+st.session_state.setdefault("reset_v", 0.90)
+st.session_state.setdefault("reset_M", 15.9)
 st.session_state.setdefault("reset_e", 300)
 st.session_state.setdefault("reset_detection_threshold", -3)
-st.session_state.setdefault("reset_num_years", 10)
-st.session_state.setdefault("reset_all_bc", 0.0)
 
 # Set Streamlit app title
 #st.title("Nemo")
 def dec2(x):
     d = round(x * 100) / 100
     return d
-# def ratio(u,r):
-    # r_attrib = []
-    # for val in u:
-        # if val == 0:
-            # r_attrib.append(r)
-        # else:
-            # r_attrib.append(1)
-    # return r_attrib
+def ratio(u,r):
+    r_attrib = []
+    for val in u:
+        if val == 0:
+            r_attrib.append(r)
+        else:
+            r_attrib.append(1)
+    return r_attrib
 
-# def attrib_constants(u,r):
-    # M_A = [st.session_state.s * r_attributed for r_attributed in ratio(u,r)]
-    # M_a = [st.session_state.s * r] * len(u)
-    # F_A = [(st.session_state.s * (1 - r_attributed)) for r_attributed in ratio(u,r)]
-    # F_a = [st.session_state.s * (1 - r)] * len(u)
-    # return M_A, M_a, F_A, F_a
+def attrib_constants(u,r):
+    M_A = [st.session_state.s * r_attributed for r_attributed in ratio(u,r)]
+    M_a = [st.session_state.s * r] * len(u)
+    F_A = [(st.session_state.s * (1 - r_attributed)) for r_attributed in ratio(u,r)]
+    F_a = [st.session_state.s * (1 - r)] * len(u)
+    return M_A, M_a, F_A, F_a
 
-# def generate_deployment_vector(input_string):
-    # temp = ""
-    # n_count = 0
+def generate_deployment_vector(input_string):
+    temp = ""
+    n_count = 0
 
-    # for char in input_string:
-        # if char == "N":
-            # n_count += 1
-        # else:
-            # if n_count > 0:
-                # temp += str(n_count)
-                # n_count = 0
+    for char in input_string:
+        if char == "N":
+            n_count += 1
+        else:
+            if n_count > 0:
+                temp += str(n_count)
+                n_count = 0
 
-            # if temp and (temp[-1] == char or (temp[-1] == "S" and char == "R") or (temp[-1] == "R" and char == "S")):
-                # temp += "0"
-            # temp += char
+            if temp and (temp[-1] == char or (temp[-1] == "S" and char == "R") or (temp[-1] == "R" and char == "S")):
+                temp += "0"
+            temp += char
 
-    # if n_count > 0:
-        # temp += str(n_count)
+    if n_count > 0:
+        temp += str(n_count)
 
-    # deployment = ""
-    # jn = []
+    deployment = ""
+    jn = []
 
-    # num_buffer = ""
-    # for char in temp:
-        # if char.isdigit():
-            # num_buffer += char
-        # else:
-            # if num_buffer:
-                # jn.append(int(num_buffer))
-                # num_buffer = ""
-            # deployment += char
+    num_buffer = ""
+    for char in temp:
+        if char.isdigit():
+            num_buffer += char
+        else:
+            if num_buffer:
+                jn.append(int(num_buffer))
+                num_buffer = ""
+            deployment += char
 
-    # if num_buffer:
-        # jn.append(int(num_buffer))
+    if num_buffer:
+        jn.append(int(num_buffer))
 
-    # jn_vector = [int(num) for num in jn]  # Convert jn to int vector
-    # deployment_vector = [1 if char == 'R' else 0 for char in deployment]
-    # if len(jn_vector)==len(deployment_vector):
-        # jn_vector = jn_vector[:-1] # To discard deployment ended by Non-Host
-    # return deployment_vector, jn_vector
+    jn_vector = [int(num) for num in jn]  # Convert jn to int vector
+    deployment_vector = [1 if char == 'R' else 0 for char in deployment]
+    if len(jn_vector)==len(deployment_vector):
+        jn_vector = jn_vector[:-1] # To discard deployment ended by Non-Host
+    return deployment_vector, jn_vector
       
-def generate_main_plot(tot,f_A, f_a, Y, Z):
+def generate_main_plot(tot,f_A, f_a, Y, Z,R):
     fig, ax = plt.subplots(figsize=(14, 10), dpi=100)
     nb_gen = len(tot)
-    ax.plot(np.arange(0, nb_gen), tot, '-r', linewidth=3)
+    ax.plot(np.arange(1, nb_gen+1), tot, '-r', linewidth=3)
     th = st.session_state.e*10**(st.session_state.detection_threshold)
-    ax.plot([0, nb_gen-1], [th, th], 'k--', label='Healthiness threshold')
-    ax.set_xlabel("Year", fontsize=40)
+    ax.plot([0, nb_gen], [th, th], 'k--', label='Detection threshold')
+    ax.set_xlabel("Generations", fontsize=40)
     ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
-    ax.set_xlim([0, nb_gen-1])
-    ax.set_ylim([10**(-6), st.session_state.K])
+    ax.set_xlim([1, nb_gen])
+    ax.set_ylim([10**(-6), st.session_state.M*(R-1)])
     ax.set_yscale('log')
     tick_locations = [10**(-6), 10**0, th, 10**1, 10**2, 10**3]
     tick_labels = [str(val) for val in [0] + tick_locations[1:]]
@@ -156,8 +152,8 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
             fig_upper, ax_upper = plt.subplots(figsize=(8, 5), dpi=100)
 
             # Plot the upper plot data
-            ax_upper.plot(np.arange(0, nb_gen), f_A, linewidth=3)
-            ax_upper.set_xlabel("Year", fontsize=40)
+            ax_upper.plot(np.arange(1, nb_gen+1), f_A, linewidth=3)
+            ax_upper.set_xlabel("Generations", fontsize=40)
             #ax_upper.set_ylabel("Frequency of allele A")
             #ax_upper.set_title("Frequency of allele avirulence A", fontsize=40)
             ax_upper.tick_params(axis='both', which='major', labelsize=30)
@@ -171,8 +167,8 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
             fig_lower, ax_lower = plt.subplots(figsize=(8, 5), dpi=100)
 
             # Plot the lower plot data
-            ax_lower.plot(np.arange(0, nb_gen), f_a, linewidth=3)
-            ax_lower.set_xlabel("Year", fontsize=40)
+            ax_lower.plot(np.arange(1, nb_gen+1), f_a, linewidth=3)
+            ax_lower.set_xlabel("Generations", fontsize=40)
             #ax_lower.set_ylabel("Frequency of allele a")
             #ax_lower.set_title("Frequency of allele virulence a", fontsize=40)
             ax_lower.tick_params(axis='both', which='major', labelsize=30)
@@ -285,141 +281,147 @@ elif main_tab == "Model & Parameters":
     
 elif main_tab == "Simulation":
     st.markdown("# Simulation")
+    if st.button("Reset all"):
+        st.session_state.a_freq = st.session_state.reset_a_freq
+        st.session_state.init_infest_cyst = st.session_state.reset_init_infest_cyst
+        st.session_state.deployment_type = st.session_state.reset_deployment_type
+        st.session_state.bc = st.session_state.reset_bc
+        st.session_state.s = st.session_state.reset_s
+        st.session_state.m = st.session_state.reset_m
+        st.session_state.ha = st.session_state.reset_ha
+        st.session_state.v = st.session_state.reset_v
+        st.session_state.M = st.session_state.reset_M
+        st.session_state.e = st.session_state.reset_e
+        st.session_state.detection_threshold = st.session_state.reset_detection_threshold
     # Other parameters
-    col1, col2, col3 = st.columns([6, 6, 10])
-    with col1:
-        if st.button("Reset initial values"):
-            st.session_state.a_freq = st.session_state.reset_a_freq
-            st.session_state.init_infest_cyst = st.session_state.reset_init_infest_cyst
-        st.markdown("### Initial values")
-        subcol1, subcol2 = st.columns([1,1])
-        with subcol1:
-            st.session_state.a_freq = st.slider("Initial frequency of the virulence allele (%):", min_value=0.0, max_value=99.9, value=st.session_state.a_freq*100, step=0.1)/100
-        with subcol2:
-            st.session_state.init_infest_cyst = st.slider("Initial infestation (cysts/g of soil):", min_value=0.01, max_value=0.55, value=st.session_state.init_infest_cyst, step=0.01)
-        
-    with col2:
-        if st.button("Reset set up"):
-            st.session_state.num_years = st.session_state.reset_num_years
-            st.session_state.detection_threshold = st.session_state.reset_detection_threshold
-        st.markdown("### Simulation set up")
-        subcol1, subcol2 = st.columns([1,1])
-        with subcol1:
-            st.session_state.num_years = st.number_input("Enter the number of years of simulation:", min_value=1, max_value=100, value=st.session_state.num_years, step=1)
-        with subcol2:
-            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (10$^\square$ cysts/g of soil):", min_value=-3, max_value=-1, value=int(st.session_state.detection_threshold), step=1)    
-    with col3:
-        st.markdown("## Configure the deployment")
-        subcol1, subcol2 = st.columns([1,1])
-        with subcol1:
-            st.session_state.all_bc = st.slider("Biocontrol efficacy all at at once (%):", 0.0, 100.0, st.session_state.all_bc*100, 1.0)/100
-        with subcol2:
-            option_dic = {'Susceptible': 1, 'Resistant': 2, 'Rotation': 0}
-            selected_all_types = st.selectbox("Plant to deploy each year:", options=list(option_dic.keys()))
-            st.session_state.all_types = option_dic[selected_all_types]  # Store the selected value in session state
-        subsubcol1, subsubcol2, subsubcol3 = st.columns([2,2,3])
-        with subsubcol1:
-            # Create a scrolling menu to select the year
-            selected_year = st.selectbox("Select the year to reconfigure:", range(1, st.session_state.num_years + 1))
-            if 'bc_dic' not in st.session_state:
-                st.session_state.bc_dic = {}
-            for k in range(1, st.session_state.num_years + 1):
-                st.session_state.bc_dic[k] = st.session_state.all_bc
-        with subsubcol2:
-            # Initialize session state to store slider values of the biocontrol
-            if 'bc_dic' not in st.session_state:
-                st.session_state.bc_dic = {}
-            # Initialize session state to store plant type values
-            if 'plant_type_dic' not in st.session_state:
-                st.session_state.plant_type_dic = {}
-            # Create plant type input for each year and show/hide based on the selected year
-            for k in range(1, st.session_state.num_years + 1):
-                year_name = f"Year {k}"
-                if k == selected_year:
-                    # Use the stored value if available, otherwise initialize to all_types
-                    option_dic = {'Susceptible': 1, 'Resistant': 2, 'Rotation': 0}
-                    selected_plant_type = st.selectbox(f"Plant deployed at {year_name}:", options=list(option_dic.keys()))
-                    st.session_state.plant_type_dic[k] = option_dic[selected_plant_type]  # Store the selected value in session state
-                else:
-                    # If it's not the selected season, show the stored value without the slider
-                    selected_plant_type = st.session_state.plant_type_dic.get(k, st.session_state.all_types) 
-        with subsubcol3:
-            # Create biocontrol sliders for each year and show/hide based on the selected year
-            for k in range(1, st.session_state.num_years + 1):
-                year_name = f"Year {k}"
-                if k == selected_year:
-                    # Use the stored value if available, otherwise initialize to 0.0
-                    biocontrol = st.slider(f"Biocontrol efficacy at {year_name} (%):", 0.0, 100.0, st.session_state.bc_dic.get(k, 0.0)*100, 1.0, key=f"slider_{k}")/100
-                    st.session_state.bc_dic[k] = biocontrol  # Store the slider value in session state
-                else:
-                    # If it's not the selected season, show the stored value without the slider
-                    biocontrol = st.session_state.bc_dic.get(k, 0.0)
-                
-        # Create a vector from the dictionnaries
-        st.session_state.plant_type_vector = [st.session_state.plant_type_dic.get(k, st.session_state.all_types) for k in range(1, st.session_state.num_years + 1)]
-        st.session_state.bc_vector = [st.session_state.bc_dic.get(k, 0.0) for k in range(1, st.session_state.num_years + 1)]
-        
-    # Create a DataFrame for display
-    data = {
-        'Year': ['Year'] + list(range(1, st.session_state.num_years + 1)),
-        'Type': ['Type'] + ['X' if x == 0 else 'S' if x == 1 else 'R' for x in st.session_state.plant_type_vector],
-        'Biocontrol': ['Biocontrol'] + [x for x in st.session_state.bc_vector],
-    }
-    df = pd.DataFrame(data)
-    # Transpose the DataFrame and display the table without indexes
-    transposed_df = df.transpose()
-    transposed_df = transposed_df.rename_axis('Year')
-    st.write(transposed_df.iloc[1:, 1:])
-        
-    X = np.zeros(st.session_state.num_years+1)
-    Y = np.zeros(st.session_state.num_years+1)
-    Z = np.zeros(st.session_state.num_years+1)
-    init_juveniles = st.session_state.init_infest_cyst*st.session_state.e
-    J_AA_0 = init_juveniles * (1-st.session_state.a_freq)**2
-    J_Aa_0 = init_juveniles * 2 * st.session_state.a_freq*(1-st.session_state.a_freq)
-    J_aa_0 = init_juveniles * (st.session_state.a_freq)**2
-    X[0] = J_AA_0
-    Y[0] = J_Aa_0
-    Z[0] = J_aa_0
-    k=0
-    for plant_type in st.session_state.plant_type_vector:
-        if plant_type == 1:
-            R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
-            M = st.session_state.K/(R-1)
-            X[k+1] = R*M*(X[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
-            Y[k+1] = 2*R*M*(X[k]+0.5*Y[k])*(Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
-            Z[k+1] = R*M*(Z[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
-        if plant_type == 2:
-            R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
-            M = st.session_state.K/(R-1)
-            X[k+1] = 0
-            Y[k+1] = R*M*Z[k]*(X[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k]))
-            Z[k+1] = R*M*Z[k]*(st.session_state.m*Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k]))   
-        if plant_type == 0:
-            X[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*X[k]
-            Y[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Y[k]
-            Z[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Z[k]
-        k+=1
-    tot = X + Y + Z
-    f_AA = np.zeros(st.session_state.num_years+1)
-    f_Aa = np.zeros(st.session_state.num_years+1)
-    f_aa = np.zeros(st.session_state.num_years+1)
-    f_A = np.zeros(st.session_state.num_years+1)
-    f_a = np.zeros(st.session_state.num_years+1)
+    colu1, colu2, colu3 = st.columns(3)
+    with colu1:
+        st.session_state.a_freq = st.slider("Initial frequency of the virulence allele (%):", min_value=0.0, max_value=99.9, value=st.session_state.a_freq*100, step=0.1)/100
+        st.markdown("Click to select a type of crop to deploy. Do not begin nor end with Non-host.")
 
-    for n in range(st.session_state.num_years+1):
-        if tot[n] == 0:
-            f_AA[n] = 0
-            f_Aa[n] = 0
-            f_aa[n] = 0
-        else:
-            f_AA[n] = X[n] / tot[n]
-            f_Aa[n] = Y[n] / tot[n]
-            f_aa[n] = Z[n] / tot[n]
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
+        st.session_state.count_patern = 0
+        if 'pattern_temp' not in st.session_state:
+            st.session_state.pattern_temp = st.session_state.deployment_type
         
-        f_A[n] = f_AA[n] + f_Aa[n] / 2
-        f_a[n] = f_aa[n] + f_Aa[n] / 2          
-    generate_main_plot(tot,f_A, f_a, Y, Z)
+        if col1.button("Susc."):
+            st.session_state.deployment_type += "S"
+            st.session_state.count_patern = 0
+            
+        if col2.button("Resis."):
+            st.session_state.deployment_type += "R"
+            st.session_state.count_patern = 0
+
+        if col3.button("Non-host"):
+            if st.session_state.deployment_type != "":
+                st.session_state.deployment_type += "N"
+                st.session_state.count_patern = 0
+                
+        if col4.button("Repeat pattern"):
+            if st.session_state.count_patern == 0:
+                pattern = st.session_state.deployment_type
+                st.session_state.count_patern += 1
+            else:
+                pattern = st.session_state.pattern_temp
+                st.session_state.count_patern += 1
+            st.session_state.deployment_type += pattern
+            
+
+        if col5.button("Delete"):
+            if len(st.session_state.deployment_type) > 0:
+                st.session_state.deployment_type = st.session_state.deployment_type[:-1]
+
+        if col6.button("Erase"):
+            st.session_state.deployment_type = ""
+
+    with colu2:
+        st.session_state.init_infest_cyst = st.slider("Initial infestation (cysts/g of soil):", min_value=0.01, max_value=2.0, value=st.session_state.init_infest_cyst, step=0.01)
+        # Display the deployment type
+        st.markdown("Deployment type")
+        st.text(st.session_state.deployment_type)
+    with colu3:
+        st.session_state.bc = st.slider("Efficacy of biocontrol (%):", min_value=0.0, max_value=99.9, value=st.session_state.bc*100, step=0.1)/100
+        st.session_state.detection_threshold = st.slider(f"Detection threshold (10$^\square$ cysts/g of soil)", min_value=-3, max_value=-1, value=int(st.session_state.detection_threshold), step=1)
+        
+    #u = generate_deployment_vector(st.session_state.deployment_type, st.session_state.num_generations)
+    u, jn = generate_deployment_vector(st.session_state.deployment_type)
+    #st.markdown(str(u))
+    #st.markdown(str(jn))
+    if u!=[] and len(u)>len(jn):
+        #st.markdown("This is it")
+        init_juveniles = st.session_state.init_infest_cyst*st.session_state.e
+        J_AA_0 = init_juveniles * (1-st.session_state.a_freq)**2
+        J_Aa_0 = init_juveniles * 2 * st.session_state.a_freq*(1-st.session_state.a_freq)
+        J_aa_0 = init_juveniles * (st.session_state.a_freq)**2
+
+        # --------------------- thresholds ----------------------------- #
+        # ------ jn-growth factors ------------
+
+        Gjn = [st.session_state.e * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1) for j in jn]
+
+        # -------- basic reproduction number ---------
+        G0 = st.session_state.e * (st.session_state.v * (1 - st.session_state.ha))
+        R0 = G0 * st.session_state.s * (1 - st.session_state.m)
+
+        # ------  alpha -----------------
+        alpha = st.session_state.m
+
+        # ------ Effective population number -----------
+        # ------ valid if rotation are same-sized -----------
+        if all(j == jn[0] for j in jn) and len(jn)>= 1:
+            j = jn[0]
+            Gj = st.session_state.e * (st.session_state.v * (1 - st.session_state.ha) * (1 - st.session_state.bc)) ** (j + 1)
+            Rj = R0 * (Gj / G0)
+            #st.markdown("Regular rotation of"); st.markdown(jn[0])
+        else:
+            Rj = float('inf')
+    
+        #st.markdown("R0 ="); st.markdown(R0)
+        #st.markdown("Resistant threshold ="); st.markdown(2 * (1 - alpha))
+        
+        nb_gen = len(u)
+        X = np.zeros(nb_gen)
+        Y = np.zeros(nb_gen)
+        Z = np.zeros(nb_gen)
+        X[0] = J_AA_0
+        Y[0] = J_Aa_0
+        Z[0] = J_aa_0
+        M_A,M_a,F_A,F_a = attrib_constants(u,st.session_state.m)
+        #st.markdown(F_A)
+        for n in range(nb_gen-1):
+            if X[n] + Y[n] + Z[n] == 0:
+                X[n + 1] = 0
+                Y[n + 1] = 0
+                Z[n + 1] = 0
+            else:
+                X[n + 1] = (Gjn[n] * (M_A[n] * F_A[n] * (X[n] + Y[n] / 2)**2) /
+                            (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n])) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
+                Y[n + 1] = (Gjn[n] * (M_A[n] * (F_a[n] * Z[n] + F_A[n] * Y[n] / 2) * (X[n] + Y[n] / 2) +
+                            F_A[n] * (M_a[n] * Z[n] + M_A[n] * Y[n] / 2) * (X[n] + Y[n] / 2)) /
+                            (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n])) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
+                Z[n + 1] = (Gjn[n] * (F_a[n] * Z[n] + F_A[n] * Y[n] / 2) * (M_a[n] * Z[n] + M_A[n] * Y[n] / 2) /
+                            (M_A[n] * (X[n] + Y[n]) + M_a[n] * Z[n])) / (1 + (X[n] + Y[n] + Z[n]) / st.session_state.M)
+
+        tot = X + Y + Z
+        f_AA = np.zeros(nb_gen)
+        f_Aa = np.zeros(nb_gen)
+        f_aa = np.zeros(nb_gen)
+        f_A = np.zeros(nb_gen)
+        f_a = np.zeros(nb_gen)
+
+        for n in range(nb_gen):
+            if tot[n] == 0:
+                f_AA[n] = 0
+                f_Aa[n] = 0
+                f_aa[n] = 0
+            else:
+                f_AA[n] = X[n] / tot[n]
+                f_Aa[n] = Y[n] / tot[n]
+                f_aa[n] = Z[n] / tot[n]
+            
+            f_A[n] = f_AA[n] + f_Aa[n] / 2
+            f_a[n] = f_aa[n] + f_Aa[n] / 2          
+        generate_main_plot(tot,f_A, f_a, Y, Z, R0)
     
     
 elif main_tab == "Settings":
@@ -427,6 +429,6 @@ elif main_tab == "Settings":
     st.markdown("These parameters describe the basic biology of PCNs. They are retrieved from intensive literature review and cautious estimations. Please edit these settings if and only if you have enough knowledge!!")
     st.session_state.s = st.slider("Survival rate of hatched larvae (%):", min_value=0.0, max_value=100.0, value=st.session_state.s*100, step=0.1)/100
     st.session_state.m = st.slider("Average male allocation on susceptible potato (%):", min_value=0.0, max_value=40.0, value=st.session_state.m*100, step=0.1)/100
-    st.session_state.w = st.slider("Viability of encysted juveniles (%):", min_value=80, max_value=100, value=int(st.session_state.w*100), step=1)/100
+    st.session_state.v = st.slider("Viability of encysted juveniles (%):", min_value=80, max_value=100, value=int(st.session_state.v*100), step=1)/100
     st.session_state.ha = st.slider("Yearly rate of accidental hatching (%):", min_value=0, max_value=35, value=int(st.session_state.ha*100), step=1)/100
     st.session_state.e = st.slider("Average eggs per cyst:", min_value=200, max_value=500, value=st.session_state.e, step=1)
