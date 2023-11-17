@@ -37,14 +37,14 @@ main_tab= hc.nav_bar(
 
 # Define default parameter values
 st.session_state.setdefault("a_freq", 0.0167)
-st.session_state.setdefault("init_infest_cyst", 0.3)
+st.session_state.setdefault("init_infest", 50)
 st.session_state.setdefault("s", 0.25)
 st.session_state.setdefault("m", 0.35)
 st.session_state.setdefault("ha", 0.17)
 st.session_state.setdefault("w", 0.90)
 st.session_state.setdefault("K", 170)
 st.session_state.setdefault("e", 300)
-st.session_state.setdefault("detection_threshold", -3)
+st.session_state.setdefault("detection_threshold", 10)
 st.session_state.setdefault("num_years", 10)
 st.session_state.setdefault("bc_vector", [])
 st.session_state.setdefault("all_bc", 0.0)
@@ -55,14 +55,14 @@ step = 0.01
 
 # Define parameter values for reset
 st.session_state.setdefault("reset_a_freq", 0.0167)
-st.session_state.setdefault("reset_init_infest_cyst", 0.5)
+st.session_state.setdefault("reset_init_infest", 0.5)
 st.session_state.setdefault("reset_s", 0.25)
 st.session_state.setdefault("reset_m", 0.35)
 st.session_state.setdefault("reset_ha", 0.17)
 st.session_state.setdefault("reset_w", 0.90)
 st.session_state.setdefault("reset_K", 170)
 st.session_state.setdefault("reset_e", 300)
-st.session_state.setdefault("reset_detection_threshold", -3)
+st.session_state.setdefault("reset_detection_threshold", 10)
 st.session_state.setdefault("reset_num_years", 10)
 st.session_state.setdefault("reset_all_bc", 0.0)
 
@@ -132,14 +132,15 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
     fig, ax = plt.subplots(figsize=(14, 10), dpi=100)
     nb_gen = len(tot)
     ax.plot(np.arange(0, nb_gen), tot, '-r', linewidth=3)
-    th = st.session_state.e*10**(st.session_state.detection_threshold)
+    th = st.session_state.detection_threshold
     ax.plot([0, nb_gen-1], [th, th], 'k--', label='Healthiness threshold')
-    ax.set_xlabel("Year", fontsize=40)
-    ax.set_ylabel("PCNs/g of soil (log)", fontsize=40)
+    ax.set_xlabel("Year", fontsize=30)
+    ax.set_ylabel("PCNs/g of soil", fontsize=30)
     ax.set_xlim([0, nb_gen-1])
     ax.set_ylim([10**(-6), st.session_state.K])
-    ax.set_yscale('log')
-    tick_locations = [10**(-6), 10**0, th, 10**1, 10**2, 10**3]
+    #ax.set_yscale('log')
+    tick_locations = list(range(0,st.session_state.K,20))
+    tick_locations.append(th)
     tick_labels = [str(val) for val in [0] + tick_locations[1:]]
     ax.set_yticks(tick_locations, tick_labels)
     ax.tick_params(axis='both', which='major', labelsize=30)
@@ -157,7 +158,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
 
             # Plot the upper plot data
             ax_upper.plot(np.arange(0, nb_gen), f_A, linewidth=3)
-            ax_upper.set_xlabel("Year", fontsize=40)
+            ax_upper.set_xlabel("Year", fontsize=30)
             #ax_upper.set_ylabel("Frequency of allele A")
             #ax_upper.set_title("Frequency of allele avirulence A", fontsize=40)
             ax_upper.tick_params(axis='both', which='major', labelsize=30)
@@ -172,7 +173,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
 
             # Plot the lower plot data
             ax_lower.plot(np.arange(0, nb_gen), f_a, linewidth=3)
-            ax_lower.set_xlabel("Year", fontsize=40)
+            ax_lower.set_xlabel("Year", fontsize=30)
             #ax_lower.set_ylabel("Frequency of allele a")
             #ax_lower.set_title("Frequency of allele virulence a", fontsize=40)
             ax_lower.tick_params(axis='both', which='major', labelsize=30)
@@ -290,13 +291,13 @@ elif main_tab == "Simulation":
     with col1:
         if st.button("Reset initial values"):
             st.session_state.a_freq = st.session_state.reset_a_freq
-            st.session_state.init_infest_cyst = st.session_state.reset_init_infest_cyst
+            st.session_state.init_infest = st.session_state.reset_init_infest
         st.markdown("### Initial values")
         subcol1, subcol2 = st.columns([1,1])
         with subcol1:
             st.session_state.a_freq = st.slider("Initial frequency of the virulence allele (%):", min_value=0.0, max_value=99.9, value=st.session_state.a_freq*100, step=0.1)/100
         with subcol2:
-            st.session_state.init_infest_cyst = st.slider("Initial infestation (cysts/g of soil):", min_value=0.01, max_value=0.55, value=st.session_state.init_infest_cyst, step=0.01)
+            st.session_state.init_infest = st.slider("Initial infestation (eggs/g of soil):", min_value=0, max_value=170, value=st.session_state.init_infest, step=1)
         
     with col2:
         if st.button("Reset set up"):
@@ -307,7 +308,7 @@ elif main_tab == "Simulation":
         with subcol1:
             st.session_state.num_years = st.number_input("Enter the number of years of simulation:", min_value=1, max_value=100, value=st.session_state.num_years, step=1)
         with subcol2:
-            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (10$^\square$ cysts/g of soil):", min_value=-3, max_value=-1, value=int(st.session_state.detection_threshold), step=1)    
+            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (eggs/g of soil):", min_value=0, max_value=30, value=int(st.session_state.detection_threshold), step=10)    
     with col3:
         st.markdown("## Configure the deployment")
         subcol1, subcol2 = st.columns([1,1])
@@ -374,7 +375,7 @@ elif main_tab == "Simulation":
     X = np.zeros(st.session_state.num_years+1)
     Y = np.zeros(st.session_state.num_years+1)
     Z = np.zeros(st.session_state.num_years+1)
-    init_juveniles = st.session_state.init_infest_cyst*st.session_state.e
+    init_juveniles = st.session_state.init_infest
     J_AA_0 = init_juveniles * (1-st.session_state.a_freq)**2
     J_Aa_0 = init_juveniles * 2 * st.session_state.a_freq*(1-st.session_state.a_freq)
     J_aa_0 = init_juveniles * (st.session_state.a_freq)**2
