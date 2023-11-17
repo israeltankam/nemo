@@ -55,7 +55,7 @@ step = 0.01
 
 # Define parameter values for reset
 st.session_state.setdefault("reset_a_freq", 0.0167)
-st.session_state.setdefault("reset_init_infest", 0.5)
+st.session_state.setdefault("reset_init_infest", 50)
 st.session_state.setdefault("reset_s", 0.25)
 st.session_state.setdefault("reset_m", 0.35)
 st.session_state.setdefault("reset_ha", 0.17)
@@ -308,7 +308,7 @@ elif main_tab == "Simulation":
         with subcol1:
             st.session_state.num_years = st.number_input("Enter the number of years of simulation:", min_value=1, max_value=100, value=st.session_state.num_years, step=1)
         with subcol2:
-            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (eggs/g of soil):", min_value=0, max_value=30, value=int(st.session_state.detection_threshold), step=10)    
+            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (eggs/g of soil):", min_value=0, max_value=30, value=st.session_state.detection_threshold, step=10)    
     with col3:
         st.markdown("## Configure the deployment")
         subcol1, subcol2 = st.columns([1,1])
