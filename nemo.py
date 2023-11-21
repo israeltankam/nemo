@@ -36,15 +36,15 @@ main_tab= hc.nav_bar(
 
 
 # Define default parameter values
-st.session_state.setdefault("a_freq", 0.0167)
-st.session_state.setdefault("init_infest", 50)
+st.session_state.setdefault("a_freq", 0.1)
+st.session_state.setdefault("init_infest", 80)
 st.session_state.setdefault("s", 0.25)
 st.session_state.setdefault("m", 0.35)
 st.session_state.setdefault("ha", 0.17)
 st.session_state.setdefault("w", 0.90)
 st.session_state.setdefault("K", 170)
 st.session_state.setdefault("e", 300)
-st.session_state.setdefault("detection_threshold", 10)
+st.session_state.setdefault("detection_threshold", 2)
 st.session_state.setdefault("num_years", 10)
 st.session_state.setdefault("bc_vector", [])
 st.session_state.setdefault("all_bc", 0.0)
@@ -54,15 +54,15 @@ step = 0.01
                             
 
 # Define parameter values for reset
-st.session_state.setdefault("reset_a_freq", 0.0167)
-st.session_state.setdefault("reset_init_infest", 50)
+st.session_state.setdefault("reset_a_freq", 0.1)
+st.session_state.setdefault("reset_init_infest", 80)
 st.session_state.setdefault("reset_s", 0.25)
 st.session_state.setdefault("reset_m", 0.35)
 st.session_state.setdefault("reset_ha", 0.17)
 st.session_state.setdefault("reset_w", 0.90)
 st.session_state.setdefault("reset_K", 170)
 st.session_state.setdefault("reset_e", 300)
-st.session_state.setdefault("reset_detection_threshold", 10)
+st.session_state.setdefault("reset_detection_threshold", 2)
 st.session_state.setdefault("reset_num_years", 10)
 st.session_state.setdefault("reset_all_bc", 0.0)
 
@@ -127,7 +127,8 @@ def dec2(x):
     # if len(jn_vector)==len(deployment_vector):
         # jn_vector = jn_vector[:-1] # To discard deployment ended by Non-Host
     # return deployment_vector, jn_vector
-      
+def round1d(number):
+    return round(number, 1)      
 def generate_main_plot(tot,f_A, f_a, Y, Z):
     fig, ax = plt.subplots(figsize=(14, 10), dpi=100)
     nb_gen = len(tot)
@@ -308,7 +309,7 @@ elif main_tab == "Simulation":
         with subcol1:
             st.session_state.num_years = st.number_input("Enter the number of years of simulation:", min_value=1, max_value=100, value=st.session_state.num_years, step=1)
         with subcol2:
-            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (eggs/g of soil):", min_value=0, max_value=30, value=st.session_state.detection_threshold, step=10)    
+            st.session_state.detection_threshold = st.slider(f"Cleanliness threshold (eggs/g of soil):", min_value=0, max_value=10, value=st.session_state.detection_threshold, step=1)    
     with col3:
         st.markdown("## Configure the deployment")
         subcol1, subcol2 = st.columns([1,1])
@@ -384,22 +385,23 @@ elif main_tab == "Simulation":
     Z[0] = J_aa_0
     k=0
     for plant_type in st.session_state.plant_type_vector:
+        #st.markdown(str(X[k]))
+        #st.markdown(str(Y[k]))
+        #st.markdown(str(Z[k]))
+        R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
+        M = st.session_state.K/(R-1)
         if plant_type == 1:
-            R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
-            M = st.session_state.K/(R-1)
-            X[k+1] = R*M*(X[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
-            Y[k+1] = 2*R*M*(X[k]+0.5*Y[k])*(Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
-            Z[k+1] = R*M*(Z[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k]))
+            X[k+1] = round1d(R*M*(X[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k])))
+            Y[k+1] = round1d(2*R*M*(X[k]+0.5*Y[k])*(Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k])))
+            Z[k+1] = round1d(R*M*(Z[k]+0.5*Y[k])**2/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+Z[k])))
         if plant_type == 2:
-            R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
-            M = st.session_state.K/(R-1)
             X[k+1] = 0
-            Y[k+1] = R*M*Z[k]*(X[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k]))
-            Z[k+1] = R*M*Z[k]*(st.session_state.m*Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k]))   
+            Y[k+1] = round1d(R*M*Z[k]*(X[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k])))
+            Z[k+1] = round1d(R*M*Z[k]*(st.session_state.m*Z[k]+0.5*Y[k])/((M+X[k]+Y[k]+Z[k])*(X[k]+Y[k]+st.session_state.m*Z[k])))   
         if plant_type == 0:
-            X[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*X[k]
-            Y[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Y[k]
-            Z[k+1] = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Z[k]
+            X[k+1] = round1d((st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*X[k])
+            Y[k+1] = round1d((st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Y[k])
+            Z[k+1] = round1d((st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*Z[k])
         k+=1
     tot = X + Y + Z
     f_AA = np.zeros(st.session_state.num_years+1)
