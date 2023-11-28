@@ -19,7 +19,9 @@ st.set_page_config(layout='wide',initial_sidebar_state='collapsed')
 menu_data = [
     {'icon': "far fa-copy", 'label':"Model & Parameters"},
     {'icon': "far fa-chart-bar", 'label':"Simulation"},#no tooltip message
+    {'icon': "fas fa-chart-line", 'label':"Genetic Drift"},
     {'icon': "fas fa-tachometer-alt", 'label':"Settings"},
+    #{'icon': "fas fa-download", 'label':"Download report"},
 ]
 
 over_theme = {'txc_inactive': '#FFFFFF', 'menu_background':'#85929E'}
@@ -423,7 +425,131 @@ elif main_tab == "Simulation":
         f_A[n] = f_AA[n] + f_Aa[n] / 2
         f_a[n] = f_aa[n] + f_Aa[n] / 2          
     generate_main_plot(tot,f_A, f_a, Y, Z)
-    
+    ############################
+if main_tab == "Genetic Drift":
+    def generate_drift_plot(tot_matrix,f_A_matrix,f_a_matrix):
+        fig_drift, ax = plt.subplots(figsize=(14, 10), dpi=100)
+        simu, nb_gen = tot_matrix.shape
+        #st.markdown(str(f_a_matrix))
+        for si in range(simu):
+            ax.plot(np.arange(0, nb_gen), tot_matrix[si,:], '-r', linewidth=1)
+        th = st.session_state.detection_threshold
+        ax.plot([0, nb_gen-1], [th, th], 'k--', label='Healthiness threshold')
+        ax.set_xlabel("Year", fontsize=30)
+        ax.set_ylabel("PCNs/g of soil (50 simulations)", fontsize=25)
+        ax.set_xlim([0, nb_gen-1])
+        ax.set_ylim([10**(-6), st.session_state.K])
+        tick_locations = list(range(0,st.session_state.K,20))
+        tick_locations.append(th)
+        tick_labels = [str(val) for val in [0] + tick_locations[1:]]
+        ax.set_yticks(tick_locations, tick_labels)
+        ax.tick_params(axis='both', which='major', labelsize=30)
+        ax.legend(fontsize=15)
+        # Create two columns with widths in the ratio 2:1
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            # Display the plot in Streamlit
+            st.pyplot(fig_drift)
+        with col2:
+            # Upper plot
+            with st.expander("Frequency of avirulence allele A"):
+                # Create a new figure and axes
+                fig_drift_upper, ax_upper = plt.subplots(figsize=(8, 5), dpi=100)
+
+                # Plot the upper plot data
+                for si in range(simu):
+                    ax_upper.plot(np.arange(0, nb_gen), f_A_matrix[si,:], '-b', linewidth=1)
+                ax_upper.set_xlabel("Year", fontsize=30)
+                #ax_upper.set_ylabel("Frequency of allele A")
+                #ax_upper.set_title("Frequency of allele avirulence A", fontsize=40)
+                ax_upper.tick_params(axis='both', which='major', labelsize=30)
+
+                # Display the upper plot using Streamlit's pyplot function
+                st.pyplot(fig_drift_upper)
+
+            # Lower plot
+            with st.expander("Frequency of virulence allele a"):
+                # Create a new figure and axes
+                fig_drift_lower, ax_lower = plt.subplots(figsize=(8, 5), dpi=100)
+
+                # Plot the lower plot data
+                for si in range(simu):
+                    ax_lower.plot(np.arange(0, nb_gen), f_a_matrix[si,:], '-b', linewidth=1)
+                ax_lower.set_xlabel("Year", fontsize=30)
+                #ax_lower.set_ylabel("Frequency of allele a")
+                #ax_lower.set_title("Frequency of allele virulence a", fontsize=40)
+                ax_lower.tick_params(axis='both', which='major', labelsize=30)
+                # Display the lower plot using Streamlit's pyplot function
+                st.pyplot(fig_drift_lower)
+                
+    ##############################################
+    X = np.zeros(st.session_state.num_years+1)
+    Y = np.zeros(st.session_state.num_years+1)
+    Z = np.zeros(st.session_state.num_years+1)
+    init_juveniles = st.session_state.init_infest
+    J_AA_0 = init_juveniles * (1-st.session_state.a_freq)**2
+    J_Aa_0 = init_juveniles * 2 * st.session_state.a_freq*(1-st.session_state.a_freq)
+    J_aa_0 = init_juveniles * (st.session_state.a_freq)**2
+    X[0] = J_AA_0
+    Y[0] = J_Aa_0
+    Z[0] = J_aa_0
+    n_simulations = 50
+    tot_matrix = np.zeros((n_simulations,st.session_state.num_years+1))
+    f_A_matrix = np.zeros((n_simulations,st.session_state.num_years+1))
+    f_a_matrix = np.zeros((n_simulations,st.session_state.num_years+1))
+    for simulate in range(n_simulations):
+        k=0
+        for plant_type in st.session_state.plant_type_vector:
+            R = (1-st.session_state.m)*st.session_state.e*st.session_state.s*(st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))
+            M = st.session_state.K/(R-1)
+            #############
+            if X[k] + Y[k] + Z[k] == 0:
+                X[k+1] = 0
+                Y[k+1] = 0
+                Z[k+1] = 0
+            else:
+                if plant_type == 1:    
+                    Pf = (1-st.session_state.m) * (X[k] + Y[k] / 2) / ((1-st.session_state.m)* (X[k] + Y[k]) + (1-st.session_state.m) * Z[k])
+                    Qf = 1 - Pf
+                    Pm = st.session_state.m * (X[k] + Y[k] / 2) / (st.session_state.m * (X[k] + Y[k]) + st.session_state.m * Z[k])
+                    Qm = 1 - Pm
+                    offspring = (R/((1-st.session_state.m)*st.session_state.e)) * M*((1-st.session_state.m)* (X[k] + Y[k]) + (1-st.session_state.m) * Z[k]) * np.random.multinomial(st.session_state.e, [Pf * Pm, Pf * Qm + Pm * Qf, Qf * Qm]) / (M + X[k] + Y[k] + Z[k])
+                if plant_type == 2:    
+                    Pf = 0
+                    Qf = 1
+                    Pm = (X[k] + Y[k] / 2) / ((X[k] + Y[k]) + st.session_state.m * Z[k])
+                    Qm = 1 - Pm
+                    offspring = (R/((1-st.session_state.m)*st.session_state.e)) * M * (1-st.session_state.m) * Z[k] * np.random.multinomial(st.session_state.e, [Pf * Pm, Pf * Qm + Pm * Qf, Qf * Qm]) / (M + X[k] + Y[k] + Z[k])
+                if plant_type == 0:
+                    offspring = (st.session_state.w*(1-st.session_state.ha)*(1-st.session_state.bc_vector[k]))*np.array([X[k], Y[k], Z[k]])
+                    
+                X[k+1] = round1d(offspring[0])
+                Y[k+1] = round1d(offspring[1])
+                Z[k+1] = round1d(offspring[2]) 
+            k=k+1
+        tot = X + Y + Z
+        f_AA = np.zeros(st.session_state.num_years+1)
+        f_Aa = np.zeros(st.session_state.num_years+1)
+        f_aa = np.zeros(st.session_state.num_years+1)
+        f_A = np.zeros(st.session_state.num_years+1)
+        f_a = np.zeros(st.session_state.num_years+1)
+
+        for n in range(st.session_state.num_years+1):
+            if tot[n] == 0:
+                f_AA[n] = 0
+                f_Aa[n] = 0
+                f_aa[n] = 0
+            else:
+                f_AA[n] = X[n] / tot[n]
+                f_Aa[n] = Y[n] / tot[n]
+                f_aa[n] = Z[n] / tot[n]
+            
+            f_A[n] = f_AA[n] + f_Aa[n] / 2
+            f_a[n] = f_aa[n] + f_Aa[n] / 2  
+        tot_matrix[simulate,:] = tot
+        f_A_matrix[simulate,:] = f_A
+        f_a_matrix[simulate,:] = f_a
+    generate_drift_plot(tot_matrix,f_A_matrix, f_a_matrix)
     
 elif main_tab == "Settings":
     st.markdown("# Settings")
