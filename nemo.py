@@ -136,7 +136,7 @@ def generate_main_plot(tot,f_A, f_a, Y, Z):
     nb_gen = len(tot)
     ax.plot(np.arange(0, nb_gen), tot, '-r', linewidth=3)
     th = st.session_state.detection_threshold
-    ax.plot([0, nb_gen-1], [th, th], 'k--', label='Healthiness threshold')
+    ax.plot([0, nb_gen-1], [th, th], 'k--', label='Acceptance threshold')
     ax.set_xlabel("Year", fontsize=30)
     ax.set_ylabel("PCNs/g of soil", fontsize=30)
     ax.set_xlim([0, nb_gen-1])
