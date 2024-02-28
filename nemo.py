@@ -202,6 +202,18 @@ if main_tab == "Introduction":
     st.markdown("- Combining resistant cultivars with biocontrol methods and rotations appears to be an effective solution for speeding up the suppression of PCN populations.")
     st.markdown("- The model presented for this simulation tracks at the same time the PCN genetics and dynamics to describe selection for virulence and biocontrol+rotation size needs under resistance.")
     st.markdown("- The user is able to enter the type of crop for each season - S for Susceptible, R for Resistant, N for Non-host (corresponding to a rotation) - and the app will draw the PCN population trajectories as well as the corresponding allele frequencies.")
+    # Define the paths to your logo images
+    logo_paths = ["figs/logo_agro.png", "figs/logo_igepp.png", "figs/logo_inrae.png", "figs/logo_inov3pt.png"]
+        # Display the logos side by side with the same size and centered
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.image(logo_paths[0], width=200, use_column_width=False)
+    with col2:
+        st.image(logo_paths[1], width=200, use_column_width=False)
+    with col3:
+        st.image(logo_paths[2], width=200, use_column_width=False)
+    with col4:
+        st.image(logo_paths[3], width=200, use_column_width=False)
 
 elif main_tab == "Model & Parameters":
     st.markdown("# Model & parameters")
@@ -282,7 +294,7 @@ elif main_tab == "Model & Parameters":
     st.markdown(table_md)
     #st.markdown("In this table as in the simulation, the **efficacy of biocontrol** is modulable and we can analyze its effect on the PCN reproduction number and suppression. Other modulable parameters for simulation are the **initial frequency of virulence allele** and the **initial soil infestation**.")
     #st.markdown("The detection threshold defines the PCN level below which the field is considered clean")
-    st.markdown("The simulation allows to choose the plant breed which is deployed per season. The other parameters, very little variable and estimated on literature data, are in the Settings menu.")
+    st.markdown("The simulation allows to choose the plant cultivar which is deployed per season. The other parameters, very little variable and estimated on literature data, are in the Settings menu.")
     # Create a checkbox to toggle the hidden content
     #checkbox = st.checkbox("See the general model")
     # if checkbox:
@@ -334,8 +346,8 @@ elif main_tab == "Simulation":
         with subcol1:
             st.session_state.all_bc = st.slider("Biocontrol efficacy all at at once (%):", 0.0, 100.0, st.session_state.all_bc*100, 1.0)/100
         with subcol2:
-            option_dic = {'Susceptible': 1, 'Resistant': 2, 'Rotation': 0}
-            selected_all_types = st.selectbox("Plant to deploy each year:", options=list(option_dic.keys()))
+            option_dic = {'Susceptible': 1, 'M. Resistant': 2, 'Rotation': 0}
+            selected_all_types = st.selectbox("Plant cultivar to deploy each year:", options=list(option_dic.keys()))
             st.session_state.all_types = option_dic[selected_all_types]  # Store the selected value in session state
         subsubcol1, subsubcol2, subsubcol3 = st.columns([2,2,3])
         with subsubcol1:
@@ -357,8 +369,8 @@ elif main_tab == "Simulation":
                 year_name = f"Year {k}"
                 if k == selected_year:
                     # Use the stored value if available, otherwise initialize to all_types
-                    option_dic = {'Susceptible': 1, 'Resistant': 2, 'Rotation': 0}
-                    selected_plant_type = st.selectbox(f"Plant deployed at {year_name}:", options=list(option_dic.keys()))
+                    option_dic = {'Susceptible': 1, 'M. Resistant': 2, 'Rotation': 0}
+                    selected_plant_type = st.selectbox(f"Cultivar deployed at {year_name}:", options=list(option_dic.keys()))
                     st.session_state.plant_type_dic[k] = option_dic[selected_plant_type]  # Store the selected value in session state
                 else:
                     # If it's not the selected season, show the stored value without the slider
@@ -569,7 +581,7 @@ elif main_tab == "Simulation":
     
 elif main_tab == "Settings":
     st.markdown("# Settings")
-    st.markdown("These parameters describe the basic biology of PCNs. They are retrieved from intensive literature review and cautious estimations. Please edit these settings if and only if you have enough knowledge!!")
+    st.markdown("These parameters describe the basic biology of the nematode. They are retrieved from intensive literature review and cautious estimations.")
     st.session_state.s = st.slider("Survival fraction of larvae (%):", min_value=0.0, max_value=100.0, value=st.session_state.s*100, step=0.1)/100
     st.session_state.m = st.slider("Average male fraction in the progeny (%):", min_value=0.0, max_value=40.0, value=st.session_state.m*100, step=0.1)/100
     st.session_state.mu = st.slider("Yearly egg mortality fraction (%):", min_value=0, max_value=20, value=int(st.session_state.mu*100), step=1)/100
