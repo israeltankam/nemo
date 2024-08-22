@@ -1,5 +1,4 @@
-matplotlib
-hydralit_components
-numpy
-pandas
-
+matplotlib==3.7.2
+hydralit_components==1.0.10
+numpy==1.24.3
+pandas==2.0.2
